@@ -1308,4 +1308,4 @@ class Rd2lStats:
             print("Sent stats successfully")
 
 
-Rd2lStats = Rd2lStats("ODM5MzcyNjg4NDI2NTMyODY2.YJIsuw.7jBuaDY-5Ce4xhrsWVtdk_dgV-I")
+Rd2lStats = Rd2lStats("ENTER_BOT_TOKEN_HERE")
