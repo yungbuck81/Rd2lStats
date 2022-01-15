@@ -3,8 +3,6 @@ import requests
 import json
 import csv
 
-from discord import client
-
 from constants.globalConstants import fantasy_kill_multiplier, fantasy_death_multiplier, fantasy_assist_multiplier, \
     fantasy_lasthit_multiplier, fantasy_gpm_multiplier, fantasy_ts_multiplier, fantasy_roshan_multiplier, \
     fantasy_wards_planted, fantasy_wards_dewarded, fantasy_camps_stacked, fantasy_first_blood, fantasy_stuns_multiplier, \
@@ -18,6 +16,8 @@ import ast
 import copy
 
 from src.utils import process_dict_values_into_list, list_difference, write_to_pos_based_csv_files
+
+client = discord.Client()
 
 
 class Rd2lStats:
@@ -80,8 +80,7 @@ class Rd2lStats:
 
         self.stats_leaders_dict = {}
 
-        self.client = discord.Client()
-        self.client.run(api_key)
+        client.run(api_key)
         self.current_week = 1
 
     # Function that calculates the fantasy score for a player object
@@ -866,446 +865,448 @@ class Rd2lStats:
                                      gpm4, kda4, fantasy4,
                                      gpm5, kda5, fantasy5)
 
-    # Function invoked when bot is live
-    @client.event
-    async def on_ready(self):
-        print('We have logged in as {0.user}'.format(self.client))
 
-    # Function invoked when user sends message
-    @client.event
-    async def on_message(self, message):
-
-        if message.author.id != sharingan_id:
-            return
-
-        # Find duplicates for a single player across multiple roles
-        if message.content.startswith('$bot_find_duplicates'):
-            self.find_duplicates()
-
-        # Generate stats will generate stats without printing them out, used for debugging
-        if message.content.startswith('$bot_generate_stats'):
-            print('Generating stats...')
-            self.get_stats()
-
-        # Prints out stats in discord embeds
-        if message.content.startswith('$bot_get_stats'):
-            gpm1 = process_dict_values_into_list(
-                dict(csv.reader(open('pos1gpmLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            gpm2 = process_dict_values_into_list(
-                dict(csv.reader(open('pos2gpmLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            gpm3 = process_dict_values_into_list(
-                dict(csv.reader(open('pos3gpmLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            gpm4 = process_dict_values_into_list(
-                dict(csv.reader(open('pos4gpmLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            gpm5 = process_dict_values_into_list(
-                dict(csv.reader(open('pos5gpmLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-
-            kda1 = process_dict_values_into_list(
-                dict(csv.reader(open('pos1kdaLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            kda2 = process_dict_values_into_list(
-                dict(csv.reader(open('pos2kdaLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            kda3 = process_dict_values_into_list(
-                dict(csv.reader(open('pos3kdaLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            kda4 = process_dict_values_into_list(
-                dict(csv.reader(open('pos4kdaLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            kda5 = process_dict_values_into_list(
-                dict(csv.reader(open('pos5kdaLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-
-            fantasy1 = process_dict_values_into_list(
-                dict(csv.reader(open('pos1fantasyLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            fantasy2 = process_dict_values_into_list(
-                dict(csv.reader(open('pos2fantasyLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            fantasy3 = process_dict_values_into_list(
-                dict(csv.reader(open('pos3fantasyLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            fantasy4 = process_dict_values_into_list(
-                dict(csv.reader(open('pos4fantasyLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-            fantasy5 = process_dict_values_into_list(
-                dict(csv.reader(open('pos5fantasyLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
-
-            stats_leaders_dict = process_dict_values_into_list(
-                dict(csv.reader(open('../stats_leaders.csv', 'r', encoding="utf-8", newline=''))))
-
-            print('Finished processing stats files')
-
-            # TODO: Add better names for embeds
-            embed = discord.Embed(title="Highest GPM", colour=discord.Colour(0x1),
-                                  description=stats_leaders_dict['gpm']['name'])
-            embed.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['gpm']['hero'])))
-            embed.set_thumbnail(url=stats_leaders_dict['gpm']['avatar'])
-            embed.add_field(name="GPM", value=stats_leaders_dict['gpm']['value'])
-            embed.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["gpm"]["match"],
-                                                                    stats_leaders_dict["gpm"]["match"]))
-
-            print('Processed embed 1')
-
-            embed2 = discord.Embed(title="Highest XPM", colour=discord.Colour(0x1),
-                                   description=stats_leaders_dict['xpm']['name'])
-            embed2.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['xpm']['hero'])))
-            embed2.set_thumbnail(url=stats_leaders_dict['xpm']['avatar'])
-            embed2.add_field(name="XPM", value=stats_leaders_dict['xpm']['value'])
-            embed2.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["xpm"]["match"],
-                                                                     stats_leaders_dict["xpm"]["match"]))
-
-            print('Processed embed 2')
-
-            embed3 = discord.Embed(title="Highest KDA", colour=discord.Colour(0x1),
-                                   description=stats_leaders_dict['kda']['name'])
-            embed3.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['kda']['hero'])))
-            embed3.set_thumbnail(url=stats_leaders_dict['kda']['avatar'])
-            embed3.add_field(name="KDA", value=stats_leaders_dict['kda']['value'])
-            embed3.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["kda"]["match"],
-                                                                     stats_leaders_dict["kda"]["match"]))
-
-            print('Processed embed 3')
-
-            embed4 = discord.Embed(title="Highest Hero damage", colour=discord.Colour(0x1),
-                                   description=stats_leaders_dict['herodamage']['name'])
-            embed4.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['herodamage']['hero'])))
-            embed4.set_thumbnail(url=stats_leaders_dict['herodamage']['avatar'])
-            embed4.add_field(name="Damage", value=stats_leaders_dict['herodamage']['value'])
-            embed4.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["herodamage"]["match"],
-                                                                     stats_leaders_dict["herodamage"]["match"]))
-
-            print('Processed embed 4')
-
-            embed5 = discord.Embed(title="Highest Stun time", colour=discord.Colour(0x1),
-                                   description=stats_leaders_dict['stuns']['name'])
-            embed5.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['stuns']['hero'])))
-            embed5.set_thumbnail(url=stats_leaders_dict['stuns']['avatar'])
-            embed5.add_field(name="Stun time", value=stats_leaders_dict['stuns']['value'])
-            embed5.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["stuns"]["match"],
-                                                                     stats_leaders_dict["stuns"]["match"]))
-
-            print('Processed embed 5')
-
-            embed6 = discord.Embed(title="Most camps stacked", colour=discord.Colour(0x1),
-                                   description=stats_leaders_dict['camps']['name'])
-            embed6.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['camps']['hero'])))
-            embed6.set_thumbnail(url=stats_leaders_dict['camps']['avatar'])
-            embed6.add_field(name="Camps stacked", value=stats_leaders_dict['camps']['value'])
-            embed6.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["camps"]["match"],
-                                                                     stats_leaders_dict["camps"]["match"]))
-
-            print('Processed embed 6')
-
-            embed7 = discord.Embed(title="Highest Tower damage", colour=discord.Colour(0x1),
-                                   description=stats_leaders_dict['towerdamage']['name'])
-            embed7.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['towerdamage']['hero'])))
-            embed7.set_thumbnail(url=stats_leaders_dict['towerdamage']['avatar'])
-            embed7.add_field(name="Damage", value=stats_leaders_dict['towerdamage']['value'])
-            embed7.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["towerdamage"]["match"],
-                                                                     stats_leaders_dict["towerdamage"]["match"]))
-
-            print('Processed embed 7')
-
-            embed8 = discord.Embed(title="Best lane efficiency", colour=discord.Colour(0x1),
-                                   description=stats_leaders_dict['lane']['name'])
-            embed8.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['lane']['hero'])))
-            embed8.set_thumbnail(url=stats_leaders_dict['lane']['avatar'])
-            embed8.add_field(name="Efficiency", value=stats_leaders_dict['lane']['value'])
-            embed8.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["lane"]["match"],
-                                                                     stats_leaders_dict["lane"]["match"]))
-
-            print('Processed embed 8')
-
-            embed9 = discord.Embed(title="Highest dewards", colour=discord.Colour(0x1),
-                                   description=stats_leaders_dict['deward']['name'])
-            embed9.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['deward']['hero'])))
-            embed9.set_thumbnail(url=stats_leaders_dict['deward']['avatar'])
-            embed9.add_field(name="Dewards", value=stats_leaders_dict['deward']['value'])
-            embed9.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["deward"]["match"],
-                                                                     stats_leaders_dict["deward"]["match"]))
-
-            print('Processed embed 9')
-
-            embed10 = discord.Embed(title="Highest APM", colour=discord.Colour(0x1),
-                                    description=stats_leaders_dict['apm']['name'])
-            embed10.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['apm']['hero'])))
-            embed10.set_thumbnail(url=stats_leaders_dict['apm']['avatar'])
-            embed10.add_field(name="APM", value=stats_leaders_dict['apm']['value'])
-            embed10.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["apm"]["match"],
-                                                                      stats_leaders_dict["apm"]["match"]))
-
-            print('Processed embed 10')
-
-            embed16 = discord.Embed(title="Highest Courier kills", colour=discord.Colour(0x1),
-                                    description=stats_leaders_dict['courier']['name'])
-            embed16.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['courier']['hero'])))
-            embed16.set_thumbnail(url=stats_leaders_dict['courier']['avatar'])
-            embed16.add_field(name="APM", value=stats_leaders_dict['courier']['value'])
-            embed16.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["courier"]["match"],
-                                                                      stats_leaders_dict["courier"]["match"]))
-
-            print('Processed embed 16')
-
-            filtered_gpm1 = {key: value for key, value in gpm1.items()}
-            sorted_dict_gpm = sorted(filtered_gpm1.items(), key=lambda kv: kv[1][0], reverse=True)
-            filtered_kda1 = {key: value for key, value in kda1.items()}
-            sorted_dict_kda = sorted(filtered_kda1.items(), key=lambda kv: kv[1][0], reverse=True)
-            filtered_fantasy1 = {key: value for key, value in fantasy1.items()}
-            sorted_dict_fantasy = sorted(filtered_fantasy1.items(), key=lambda kv: kv[1][0], reverse=True)
-
-            embed11 = discord.Embed(title="Pos 1 Leaderboard", colour=discord.Colour(0x1))
-            embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed11.add_field(name="Player", value="{} \n{} \n{} \n{} \n{}".format(
-                self.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
-                self.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
-                self.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
-                self.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
-                self.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
-            embed11.add_field(name="GPM",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
-                                                                    sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
-                                                                    sorted_dict_gpm[4][1][0]), inline=True)
-            embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed11.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_kda[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
-            embed11.add_field(name="KDA",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
-                                                                    sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
-                                                                    sorted_dict_kda[4][1][0]), inline=True)
-            embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed11.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
-            embed11.add_field(name="Overall performance",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_fantasy[0][1][0],
-                                                                    sorted_dict_fantasy[1][1][0],
-                                                                    sorted_dict_fantasy[2][1][0],
-                                                                    sorted_dict_fantasy[3][1][0],
-                                                                    sorted_dict_fantasy[4][1][0]), inline=True)
-
-            print('Processed embed 11')
-
-            filtered_gpm2 = {key: value for key, value in gpm2.items()}
-            sorted_dict_gpm = sorted(filtered_gpm2.items(), key=lambda kv: kv[1][0], reverse=True)
-            filtered_kda2 = {key: value for key, value in kda2.items()}
-            sorted_dict_kda = sorted(filtered_kda2.items(), key=lambda kv: kv[1][0], reverse=True)
-            filtered_fantasy2 = {key: value for key, value in fantasy2.items()}
-            sorted_dict_fantasy = sorted(filtered_fantasy2.items(), key=lambda kv: kv[1][0], reverse=True)
-
-            embed12 = discord.Embed(title="Pos 2 Leaderboard", colour=discord.Colour(0x1))
-            embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed12.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
-            embed12.add_field(name="GPM",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
-                                                                    sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
-                                                                    sorted_dict_gpm[4][1][0]), inline=True)
-            embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed12.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_kda[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
-            embed12.add_field(name="KDA",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
-                                                                    sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
-                                                                    sorted_dict_kda[4][1][0]), inline=True)
-            embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed12.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
-            embed12.add_field(name="Overall performance",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_fantasy[0][1][0],
-                                                                    sorted_dict_fantasy[1][1][0],
-                                                                    sorted_dict_fantasy[2][1][0],
-                                                                    sorted_dict_fantasy[3][1][0],
-                                                                    sorted_dict_fantasy[4][1][0]), inline=True)
-
-            print('Processed embed 12')
-            print('Sleeping for 60s...')
-
-            time.sleep(60)
-
-            filtered_gpm3 = {key: value for key, value in gpm3.items()}
-            sorted_dict_gpm = sorted(filtered_gpm3.items(), key=lambda kv: kv[1][0], reverse=True)
-            filtered_kda3 = {key: value for key, value in kda3.items()}
-            sorted_dict_kda = sorted(filtered_kda3.items(), key=lambda kv: kv[1][0], reverse=True)
-            filtered_fantasy3 = {key: value for key, value in fantasy3.items()}
-            sorted_dict_fantasy = sorted(filtered_fantasy3.items(), key=lambda kv: kv[1][0], reverse=True)
-
-            embed13 = discord.Embed(title="Pos 3 Leaderboard", colour=discord.Colour(0x1))
-            embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed13.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
-            embed13.add_field(name="GPM",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
-                                                                    sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
-                                                                    sorted_dict_gpm[4][1][0]), inline=True)
-            embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed13.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_kda[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
-            embed13.add_field(name="KDA",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
-                                                                    sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
-                                                                    sorted_dict_kda[4][1][0]), inline=True)
-            embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed13.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
-            embed13.add_field(name="Overall performance",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_fantasy[0][1][0],
-                                                                    sorted_dict_fantasy[1][1][0],
-                                                                    sorted_dict_fantasy[2][1][0],
-                                                                    sorted_dict_fantasy[3][1][0],
-                                                                    sorted_dict_fantasy[4][1][0]), inline=True)
-
-            print('Processed embed 13')
-
-            filtered_gpm4 = {key: value for key, value in gpm4.items()}
-            sorted_dict_gpm = sorted(filtered_gpm4.items(), key=lambda kv: kv[1][0], reverse=True)
-            filtered_kda4 = {key: value for key, value in kda4.items()}
-            sorted_dict_kda = sorted(filtered_kda4.items(), key=lambda kv: kv[1][0], reverse=True)
-            filtered_fantasy4 = {key: value for key, value in fantasy4.items()}
-            sorted_dict_fantasy = sorted(filtered_fantasy4.items(), key=lambda kv: kv[1][0], reverse=True)
-
-            embed14 = discord.Embed(title="Pos 4 Leaderboard", colour=discord.Colour(0x1))
-            embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed14.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
-            embed14.add_field(name="GPM",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
-                                                                    sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
-                                                                    sorted_dict_gpm[4][1][0]), inline=True)
-            embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed14.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_kda[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
-            embed14.add_field(name="KDA",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
-                                                                    sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
-                                                                    sorted_dict_kda[4][1][0]), inline=True)
-            embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed14.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
-            embed14.add_field(name="Overall performance",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_fantasy[0][1][0],
-                                                                    sorted_dict_fantasy[1][1][0],
-                                                                    sorted_dict_fantasy[2][1][0],
-                                                                    sorted_dict_fantasy[3][1][0],
-                                                                    sorted_dict_fantasy[4][1][0]), inline=True)
-
-            print('Processed embed 14')
-
-            filtered_gpm5 = {key: value for key, value in gpm5.items()}
-            sorted_dict_gpm = sorted(filtered_gpm5.items(), key=lambda kv: kv[1][0], reverse=True)
-            filtered_kda5 = {key: value for key, value in kda5.items()}
-            sorted_dict_kda = sorted(filtered_kda5.items(), key=lambda kv: kv[1][0], reverse=True)
-            filtered_fantasy5 = {key: value for key, value in fantasy5.items()}
-            sorted_dict_fantasy = sorted(filtered_fantasy5.items(), key=lambda kv: kv[1][0], reverse=True)
-            print('Sleeping for 60s...')
-
-            time.sleep(60)
-
-            embed15 = discord.Embed(title="Pos 5 Leaderboard", colour=discord.Colour(0x1))
-            embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed15.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
-            embed15.add_field(name="GPM",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
-                                                                    sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
-                                                                    sorted_dict_gpm[4][1][0]), inline=True)
-            embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed15.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_kda[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
-            embed15.add_field(name="KDA",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
-                                                                    sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
-                                                                    sorted_dict_kda[4][1][0]), inline=True)
-            embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-            embed15.add_field(name="Player",
-                              value="{} \n{} \n{} \n{} \n{}".format(
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
-                                  self.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
-            embed15.add_field(name="Overall performance",
-                              value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_fantasy[0][1][0],
-                                                                    sorted_dict_fantasy[1][1][0],
-                                                                    sorted_dict_fantasy[2][1][0],
-                                                                    sorted_dict_fantasy[3][1][0],
-                                                                    sorted_dict_fantasy[4][1][0]), inline=True)
-
-            print('Processed embed 15')
-
-            await message.channel.send(embed=embed)
-            await message.channel.send(embed=embed2)
-            await message.channel.send(embed=embed3)
-            await message.channel.send(embed=embed4)
-            await message.channel.send(embed=embed5)
-            await message.channel.send(embed=embed6)
-            await message.channel.send(embed=embed7)
-            await message.channel.send(embed=embed8)
-            await message.channel.send(embed=embed9)
-            await message.channel.send(embed=embed10)
-            await message.channel.send(embed=embed16)
-
-            await message.channel.send(embed=embed11)
-            await message.channel.send(embed=embed12)
-            await message.channel.send(embed=embed13)
-            await message.channel.send(embed=embed14)
-            await message.channel.send(embed=embed15)
-            print("Sent stats successfully")
+rd2lstats = Rd2lStats("ODM5MzcyNjg4NDI2NTMyODY2.YJIsuw.w4y1YnqDCqGYZCYcVpIGPoeoZAw")
 
 
-Rd2lStats = Rd2lStats("ENTER_BOT_TOKEN_HERE")
+# Function invoked when bot is live
+@client.event
+async def on_ready():
+    print('We have logged in as {0.user}'.format(client))
+
+
+# Function invoked when user sends message
+@client.event
+async def on_message(message):
+
+    if message.author.id != sharingan_id:
+        return
+
+    # Find duplicates for a single player across multiple roles
+    if message.content.startswith('$bot_find_duplicates'):
+        rd2lstats.find_duplicates()
+
+    # Generate stats will generate stats without printing them out, used for debugging
+    if message.content.startswith('$bot_generate_stats'):
+        print('Generating stats...')
+        rd2lstats.get_stats()
+
+    # Prints out stats in discord embeds
+    if message.content.startswith('$bot_get_stats'):
+        gpm1 = process_dict_values_into_list(
+            dict(csv.reader(open('pos1gpmLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        gpm2 = process_dict_values_into_list(
+            dict(csv.reader(open('pos2gpmLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        gpm3 = process_dict_values_into_list(
+            dict(csv.reader(open('pos3gpmLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        gpm4 = process_dict_values_into_list(
+            dict(csv.reader(open('pos4gpmLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        gpm5 = process_dict_values_into_list(
+            dict(csv.reader(open('pos5gpmLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+
+        kda1 = process_dict_values_into_list(
+            dict(csv.reader(open('pos1kdaLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        kda2 = process_dict_values_into_list(
+            dict(csv.reader(open('pos2kdaLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        kda3 = process_dict_values_into_list(
+            dict(csv.reader(open('pos3kdaLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        kda4 = process_dict_values_into_list(
+            dict(csv.reader(open('pos4kdaLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        kda5 = process_dict_values_into_list(
+            dict(csv.reader(open('pos5kdaLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+
+        fantasy1 = process_dict_values_into_list(
+            dict(csv.reader(open('pos1fantasyLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        fantasy2 = process_dict_values_into_list(
+            dict(csv.reader(open('pos2fantasyLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        fantasy3 = process_dict_values_into_list(
+            dict(csv.reader(open('pos3fantasyLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        fantasy4 = process_dict_values_into_list(
+            dict(csv.reader(open('pos4fantasyLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+        fantasy5 = process_dict_values_into_list(
+            dict(csv.reader(open('pos5fantasyLeaderboard.csv', 'r', encoding="utf-8", newline=''))))
+
+        stats_leaders_dict = process_dict_values_into_list(
+            dict(csv.reader(open('../stats_leaders.csv', 'r', encoding="utf-8", newline=''))))
+
+        print('Finished processing stats files')
+
+        # TODO: Add better names for embeds
+        embed = discord.Embed(title="Highest GPM", colour=discord.Colour(0x1),
+                              description=stats_leaders_dict['gpm']['name'])
+        embed.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['gpm']['hero'])))
+        embed.set_thumbnail(url=stats_leaders_dict['gpm']['avatar'])
+        embed.add_field(name="GPM", value=stats_leaders_dict['gpm']['value'])
+        embed.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["gpm"]["match"],
+                                                                stats_leaders_dict["gpm"]["match"]))
+
+        print('Processed embed 1')
+
+        embed2 = discord.Embed(title="Highest XPM", colour=discord.Colour(0x1),
+                               description=stats_leaders_dict['xpm']['name'])
+        embed2.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['xpm']['hero'])))
+        embed2.set_thumbnail(url=stats_leaders_dict['xpm']['avatar'])
+        embed2.add_field(name="XPM", value=stats_leaders_dict['xpm']['value'])
+        embed2.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["xpm"]["match"],
+                                                                 stats_leaders_dict["xpm"]["match"]))
+
+        print('Processed embed 2')
+
+        embed3 = discord.Embed(title="Highest KDA", colour=discord.Colour(0x1),
+                               description=stats_leaders_dict['kda']['name'])
+        embed3.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['kda']['hero'])))
+        embed3.set_thumbnail(url=stats_leaders_dict['kda']['avatar'])
+        embed3.add_field(name="KDA", value=stats_leaders_dict['kda']['value'])
+        embed3.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["kda"]["match"],
+                                                                 stats_leaders_dict["kda"]["match"]))
+
+        print('Processed embed 3')
+
+        embed4 = discord.Embed(title="Highest Hero damage", colour=discord.Colour(0x1),
+                               description=stats_leaders_dict['herodamage']['name'])
+        embed4.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['herodamage']['hero'])))
+        embed4.set_thumbnail(url=stats_leaders_dict['herodamage']['avatar'])
+        embed4.add_field(name="Damage", value=stats_leaders_dict['herodamage']['value'])
+        embed4.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["herodamage"]["match"],
+                                                                 stats_leaders_dict["herodamage"]["match"]))
+
+        print('Processed embed 4')
+
+        embed5 = discord.Embed(title="Highest Stun time", colour=discord.Colour(0x1),
+                               description=stats_leaders_dict['stuns']['name'])
+        embed5.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['stuns']['hero'])))
+        embed5.set_thumbnail(url=stats_leaders_dict['stuns']['avatar'])
+        embed5.add_field(name="Stun time", value=stats_leaders_dict['stuns']['value'])
+        embed5.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["stuns"]["match"],
+                                                                 stats_leaders_dict["stuns"]["match"]))
+
+        print('Processed embed 5')
+
+        embed6 = discord.Embed(title="Most camps stacked", colour=discord.Colour(0x1),
+                               description=stats_leaders_dict['camps']['name'])
+        embed6.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['camps']['hero'])))
+        embed6.set_thumbnail(url=stats_leaders_dict['camps']['avatar'])
+        embed6.add_field(name="Camps stacked", value=stats_leaders_dict['camps']['value'])
+        embed6.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["camps"]["match"],
+                                                                 stats_leaders_dict["camps"]["match"]))
+
+        print('Processed embed 6')
+
+        embed7 = discord.Embed(title="Highest Tower damage", colour=discord.Colour(0x1),
+                               description=stats_leaders_dict['towerdamage']['name'])
+        embed7.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['towerdamage']['hero'])))
+        embed7.set_thumbnail(url=stats_leaders_dict['towerdamage']['avatar'])
+        embed7.add_field(name="Damage", value=stats_leaders_dict['towerdamage']['value'])
+        embed7.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["towerdamage"]["match"],
+                                                                 stats_leaders_dict["towerdamage"]["match"]))
+
+        print('Processed embed 7')
+
+        embed8 = discord.Embed(title="Best lane efficiency", colour=discord.Colour(0x1),
+                               description=stats_leaders_dict['lane']['name'])
+        embed8.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['lane']['hero'])))
+        embed8.set_thumbnail(url=stats_leaders_dict['lane']['avatar'])
+        embed8.add_field(name="Efficiency", value=stats_leaders_dict['lane']['value'])
+        embed8.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["lane"]["match"],
+                                                                 stats_leaders_dict["lane"]["match"]))
+
+        print('Processed embed 8')
+
+        embed9 = discord.Embed(title="Highest dewards", colour=discord.Colour(0x1),
+                               description=stats_leaders_dict['deward']['name'])
+        embed9.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['deward']['hero'])))
+        embed9.set_thumbnail(url=stats_leaders_dict['deward']['avatar'])
+        embed9.add_field(name="Dewards", value=stats_leaders_dict['deward']['value'])
+        embed9.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["deward"]["match"],
+                                                                 stats_leaders_dict["deward"]["match"]))
+
+        print('Processed embed 9')
+
+        embed10 = discord.Embed(title="Highest APM", colour=discord.Colour(0x1),
+                                description=stats_leaders_dict['apm']['name'])
+        embed10.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['apm']['hero'])))
+        embed10.set_thumbnail(url=stats_leaders_dict['apm']['avatar'])
+        embed10.add_field(name="APM", value=stats_leaders_dict['apm']['value'])
+        embed10.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["apm"]["match"],
+                                                                  stats_leaders_dict["apm"]["match"]))
+
+        print('Processed embed 10')
+
+        embed16 = discord.Embed(title="Highest Courier kills", colour=discord.Colour(0x1),
+                                description=stats_leaders_dict['courier']['name'])
+        embed16.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['courier']['hero'])))
+        embed16.set_thumbnail(url=stats_leaders_dict['courier']['avatar'])
+        embed16.add_field(name="APM", value=stats_leaders_dict['courier']['value'])
+        embed16.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["courier"]["match"],
+                                                                  stats_leaders_dict["courier"]["match"]))
+
+        print('Processed embed 16')
+
+        filtered_gpm1 = {key: value for key, value in gpm1.items()}
+        sorted_dict_gpm = sorted(filtered_gpm1.items(), key=lambda kv: kv[1][0], reverse=True)
+        filtered_kda1 = {key: value for key, value in kda1.items()}
+        sorted_dict_kda = sorted(filtered_kda1.items(), key=lambda kv: kv[1][0], reverse=True)
+        filtered_fantasy1 = {key: value for key, value in fantasy1.items()}
+        sorted_dict_fantasy = sorted(filtered_fantasy1.items(), key=lambda kv: kv[1][0], reverse=True)
+
+        embed11 = discord.Embed(title="Pos 1 Leaderboard", colour=discord.Colour(0x1))
+        embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed11.add_field(name="Player", value="{} \n{} \n{} \n{} \n{}".format(
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
+        embed11.add_field(name="GPM",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
+                                                                sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
+                                                                sorted_dict_gpm[4][1][0]), inline=True)
+        embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed11.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
+        embed11.add_field(name="KDA",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
+                                                                sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
+                                                                sorted_dict_kda[4][1][0]), inline=True)
+        embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed11.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
+        embed11.add_field(name="Overall performance",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_fantasy[0][1][0],
+                                                                sorted_dict_fantasy[1][1][0],
+                                                                sorted_dict_fantasy[2][1][0],
+                                                                sorted_dict_fantasy[3][1][0],
+                                                                sorted_dict_fantasy[4][1][0]), inline=True)
+
+        print('Processed embed 11')
+
+        filtered_gpm2 = {key: value for key, value in gpm2.items()}
+        sorted_dict_gpm = sorted(filtered_gpm2.items(), key=lambda kv: kv[1][0], reverse=True)
+        filtered_kda2 = {key: value for key, value in kda2.items()}
+        sorted_dict_kda = sorted(filtered_kda2.items(), key=lambda kv: kv[1][0], reverse=True)
+        filtered_fantasy2 = {key: value for key, value in fantasy2.items()}
+        sorted_dict_fantasy = sorted(filtered_fantasy2.items(), key=lambda kv: kv[1][0], reverse=True)
+
+        embed12 = discord.Embed(title="Pos 2 Leaderboard", colour=discord.Colour(0x1))
+        embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed12.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
+        embed12.add_field(name="GPM",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
+                                                                sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
+                                                                sorted_dict_gpm[4][1][0]), inline=True)
+        embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed12.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
+        embed12.add_field(name="KDA",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
+                                                                sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
+                                                                sorted_dict_kda[4][1][0]), inline=True)
+        embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed12.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
+        embed12.add_field(name="Overall performance",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_fantasy[0][1][0],
+                                                                sorted_dict_fantasy[1][1][0],
+                                                                sorted_dict_fantasy[2][1][0],
+                                                                sorted_dict_fantasy[3][1][0],
+                                                                sorted_dict_fantasy[4][1][0]), inline=True)
+
+        print('Processed embed 12')
+        print('Sleeping for 60s...')
+
+        time.sleep(60)
+
+        filtered_gpm3 = {key: value for key, value in gpm3.items()}
+        sorted_dict_gpm = sorted(filtered_gpm3.items(), key=lambda kv: kv[1][0], reverse=True)
+        filtered_kda3 = {key: value for key, value in kda3.items()}
+        sorted_dict_kda = sorted(filtered_kda3.items(), key=lambda kv: kv[1][0], reverse=True)
+        filtered_fantasy3 = {key: value for key, value in fantasy3.items()}
+        sorted_dict_fantasy = sorted(filtered_fantasy3.items(), key=lambda kv: kv[1][0], reverse=True)
+
+        embed13 = discord.Embed(title="Pos 3 Leaderboard", colour=discord.Colour(0x1))
+        embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed13.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
+        embed13.add_field(name="GPM",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
+                                                                sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
+                                                                sorted_dict_gpm[4][1][0]), inline=True)
+        embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed13.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
+        embed13.add_field(name="KDA",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
+                                                                sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
+                                                                sorted_dict_kda[4][1][0]), inline=True)
+        embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed13.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
+        embed13.add_field(name="Overall performance",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_fantasy[0][1][0],
+                                                                sorted_dict_fantasy[1][1][0],
+                                                                sorted_dict_fantasy[2][1][0],
+                                                                sorted_dict_fantasy[3][1][0],
+                                                                sorted_dict_fantasy[4][1][0]), inline=True)
+
+        print('Processed embed 13')
+
+        filtered_gpm4 = {key: value for key, value in gpm4.items()}
+        sorted_dict_gpm = sorted(filtered_gpm4.items(), key=lambda kv: kv[1][0], reverse=True)
+        filtered_kda4 = {key: value for key, value in kda4.items()}
+        sorted_dict_kda = sorted(filtered_kda4.items(), key=lambda kv: kv[1][0], reverse=True)
+        filtered_fantasy4 = {key: value for key, value in fantasy4.items()}
+        sorted_dict_fantasy = sorted(filtered_fantasy4.items(), key=lambda kv: kv[1][0], reverse=True)
+
+        embed14 = discord.Embed(title="Pos 4 Leaderboard", colour=discord.Colour(0x1))
+        embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed14.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
+        embed14.add_field(name="GPM",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
+                                                                sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
+                                                                sorted_dict_gpm[4][1][0]), inline=True)
+        embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed14.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
+        embed14.add_field(name="KDA",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
+                                                                sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
+                                                                sorted_dict_kda[4][1][0]), inline=True)
+        embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed14.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
+        embed14.add_field(name="Overall performance",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_fantasy[0][1][0],
+                                                                sorted_dict_fantasy[1][1][0],
+                                                                sorted_dict_fantasy[2][1][0],
+                                                                sorted_dict_fantasy[3][1][0],
+                                                                sorted_dict_fantasy[4][1][0]), inline=True)
+
+        print('Processed embed 14')
+
+        filtered_gpm5 = {key: value for key, value in gpm5.items()}
+        sorted_dict_gpm = sorted(filtered_gpm5.items(), key=lambda kv: kv[1][0], reverse=True)
+        filtered_kda5 = {key: value for key, value in kda5.items()}
+        sorted_dict_kda = sorted(filtered_kda5.items(), key=lambda kv: kv[1][0], reverse=True)
+        filtered_fantasy5 = {key: value for key, value in fantasy5.items()}
+        sorted_dict_fantasy = sorted(filtered_fantasy5.items(), key=lambda kv: kv[1][0], reverse=True)
+        print('Sleeping for 60s...')
+
+        time.sleep(60)
+
+        embed15 = discord.Embed(title="Pos 5 Leaderboard", colour=discord.Colour(0x1))
+        embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed15.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
+        embed15.add_field(name="GPM",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
+                                                                sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
+                                                                sorted_dict_gpm[4][1][0]), inline=True)
+        embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed15.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
+        embed15.add_field(name="KDA",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
+                                                                sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
+                                                                sorted_dict_kda[4][1][0]), inline=True)
+        embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed15.add_field(name="Player",
+                          value="{} \n{} \n{} \n{} \n{}".format(
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
+        embed15.add_field(name="Overall performance",
+                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_fantasy[0][1][0],
+                                                                sorted_dict_fantasy[1][1][0],
+                                                                sorted_dict_fantasy[2][1][0],
+                                                                sorted_dict_fantasy[3][1][0],
+                                                                sorted_dict_fantasy[4][1][0]), inline=True)
+
+        print('Processed embed 15')
+
+        await message.channel.send(embed=embed)
+        await message.channel.send(embed=embed2)
+        await message.channel.send(embed=embed3)
+        await message.channel.send(embed=embed4)
+        await message.channel.send(embed=embed5)
+        await message.channel.send(embed=embed6)
+        await message.channel.send(embed=embed7)
+        await message.channel.send(embed=embed8)
+        await message.channel.send(embed=embed9)
+        await message.channel.send(embed=embed10)
+        await message.channel.send(embed=embed16)
+
+        await message.channel.send(embed=embed11)
+        await message.channel.send(embed=embed12)
+        await message.channel.send(embed=embed13)
+        await message.channel.send(embed=embed14)
+        await message.channel.send(embed=embed15)
+        print("Sent stats successfully")
