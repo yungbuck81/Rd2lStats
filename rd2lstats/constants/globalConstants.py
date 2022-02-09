@@ -1,6 +1,6 @@
 
 # Contains the current week match ID's to parse stats for
-match_ids = ["6062783117", "6062831827", "6062830154", "6062789342", "6062779562", "6062776919", "6062837222", "6062820546", "6062800178", "6062778380", "6062832242", "6062780059", "6062776994", "6062831560", "6062851356", "6062798323", "6062851728", "6062777961", "6062839966", "6062820792"]
+match_ids = ["6406924213", "6406971511", "6406923278", "6406958210", "6406921193", "6406966432", "6406923466", "6406960155", "6406935527", "6406973127", "6406935796", "6406970153", "6406938456", "6406972893", "6406968044", "6406923415", "6406965166", "6406919757", "6406963492"]
 
 # Admin discord ID
 sharingan_id = 252382118510854144
@@ -18,16 +18,16 @@ opendota_api_matches_url = "https://api.opendota.com/api/matches/"
 # Stats multipliers, these are slightly modified from Dota's fantasy point calculation
 fantasy_kill_multiplier = 0.5
 fantasy_death_multiplier = -0.5
-fantasy_assist_multiplier = 0.15
-fantasy_lasthit_multiplier = 0.005
-fantasy_gpm_multiplier = 0.005
+fantasy_assist_multiplier = 0.3
+fantasy_lasthit_multiplier = 0.003
+fantasy_gpm_multiplier = 0.002
 fantasy_ts_multiplier = 1
 fantasy_roshan_multiplier = 1
-fantasy_wards_planted = 0.3
-fantasy_wards_dewarded = 0.4
+fantasy_wards_planted = 0.1
+fantasy_wards_dewarded = 0.3
 fantasy_camps_stacked = 0.4
-fantasy_runes_grabbed = 0.25
-fantasy_first_blood = 3
+fantasy_runes_grabbed = 0.2
+fantasy_first_blood = 4
 fantasy_stuns_multiplier = 0.05
 
 # Pos 1 constants

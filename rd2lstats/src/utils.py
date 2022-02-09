@@ -21,13 +21,29 @@ def process_dict_values_into_list(dict1):
     return new_dict
 
 
+# Function to find player in dictionaries
+def find_player_in_dictionaries(player, dict1, dict2, dict3, dict4, dict5):
+    if player in dict1:
+        return dict1
+    if player in dict2:
+        return dict2
+    if player in dict3:
+        return dict3
+    if player in dict4:
+        return dict4
+    if player in dict5:
+        return dict5
+    else:
+        print("Player: {} was not found in any dictionary provided".format(player))
+        return
+
+
 # Function that takes in position based stats dictionaries and writes them to csv files
 def write_to_pos_based_csv_files(gpm1, kda1, fantasy1,
                                  gpm2, kda2, fantasy2,
                                  gpm3, kda3, fantasy3,
                                  gpm4, kda4, fantasy4,
                                  gpm5, kda5, fantasy5):
-
     # TODO: Refactor this to be a function that can be reused
     gpm1_file = open(pos1directory + pos1gpmfile, 'w', encoding="utf-8", newline='')
     gpm1_writer = csv.writer(gpm1_file)
@@ -110,3 +126,43 @@ def write_to_pos_based_csv_files(gpm1, kda1, fantasy1,
     fantasy5_file.close()
 
     print("Writing to all files finished.")
+
+# Function that takes in position based stats dictionaries and writes them to csv files
+def empty_all_stat_files():
+    # TODO: Refactor this to be a function that can be reused
+    gpm1_file = open(pos1directory + pos1gpmfile, 'w+', encoding="utf-8", newline='')
+    gpm1_file.close()
+    kda1_file = open(pos1directory + pos1kdafile, 'w+', encoding="utf-8", newline='')
+    kda1_file.close()
+    fantasy1_file = open(pos1directory + pos1fantasyfile, 'w+', encoding="utf-8", newline='')
+    fantasy1_file.close()
+
+    gpm2_file = open(pos2directory + pos2gpmfile, 'w+', encoding="utf-8", newline='')
+    gpm2_file.close()
+    kda2_file = open(pos2directory + pos2kdafile, 'w+', encoding="utf-8", newline='')
+    kda2_file.close()
+    fantasy2_file = open(pos2directory + pos2fantasyfile, 'w+', encoding="utf-8", newline='')
+    fantasy2_file.close()
+
+    gpm3_file = open(pos3directory + pos3gpmfile, 'w+', encoding="utf-8", newline='')
+    gpm3_file.close()
+    kda3_file = open(pos3directory + pos3kdafile, 'w+', encoding="utf-8", newline='')
+    kda3_file.close()
+    fantasy3_file = open(pos3directory + pos3fantasyfile, 'w+', encoding="utf-8", newline='')
+    fantasy3_file.close()
+
+    gpm4_file = open(pos4directory + pos4gpmfile, 'w+', encoding="utf-8", newline='')
+    gpm4_file.close()
+    kda4_file = open(pos4directory + pos4kdafile, 'w+', encoding="utf-8", newline='')
+    kda4_file.close()
+    fantasy4_file = open(pos4directory + pos4fantasyfile, 'w+', encoding="utf-8", newline='')
+    fantasy4_file.close()
+
+    gpm5_file = open(pos5directory + pos5gpmfile, 'w+', encoding="utf-8", newline='')
+    gpm5_file.close()
+    kda5_file = open(pos5directory + pos5kdafile, 'w+', encoding="utf-8", newline='')
+    kda5_file.close()
+    fantasy5_file = open(pos5directory + pos5fantasyfile, 'w+', encoding="utf-8", newline='')
+    fantasy5_file.close()
+
+    print("Emptied all files")
