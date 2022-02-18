@@ -2,6 +2,8 @@ import discord
 import requests
 import json
 import csv
+import sys
+sys.path.append("..")
 
 from constants.globalConstants import fantasy_kill_multiplier, fantasy_death_multiplier, fantasy_assist_multiplier, \
     fantasy_lasthit_multiplier, fantasy_gpm_multiplier, fantasy_ts_multiplier, fantasy_roshan_multiplier, \
@@ -9,7 +11,7 @@ from constants.globalConstants import fantasy_kill_multiplier, fantasy_death_mul
     pos1directory, pos1gpmfile, pos2directory, pos2gpmfile, pos3directory, pos3gpmfile, pos4directory, \
     pos4gpmfile, pos5directory, pos5gpmfile, pos1kdafile, pos2kdafile, pos4kdafile, pos3kdafile, pos5kdafile, \
     pos1fantasyfile, pos2fantasyfile, pos3fantasyfile, pos4fantasyfile, pos5fantasyfile, match_ids, \
-    opendota_api_matches_url, dotabuff_url, opendota_api_players_url, sharingan_id, steam_cdn
+    opendota_api_matches_url, dotabuff_url, opendota_api_players_url, admin_ids, steam_cdn, permissionkeyfile
 from constants.hero_ids import get_hero_name
 import time
 import ast
@@ -19,7 +21,7 @@ from src.utils import process_dict_values_into_list, list_difference, write_to_p
     find_player_in_dictionaries, empty_all_stat_files
 
 client = discord.Client()
-
+permissionkey = open(permissionkeyfile).read()
 
 class Rd2lStats:
 
@@ -1203,7 +1205,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
 
-    if message.author.id != sharingan_id:
+    if message.author.id not in admin_ids:
         return
 
     # Find duplicates for a single player across multiple roles
@@ -1643,4 +1645,4 @@ async def on_message(message):
         await message.channel.send(embed=embed15)
         print("Sent stats successfully")
 
-client.run("")
+client.run(permissionkey)
