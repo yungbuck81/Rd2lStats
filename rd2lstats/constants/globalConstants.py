@@ -2,8 +2,12 @@
 # Contains the current week match ID's to parse stats for
 match_ids = ["6406924213", "6406971511", "6406923278", "6406958210", "6406921193", "6406966432", "6406923466", "6406960155", "6406935527", "6406973127", "6406935796", "6406970153", "6406938456", "6406972893", "6406968044", "6406923415", "6406965166", "6406919757", "6406963492"]
 
-# Admin discord ID
-sharingan_id = 252382118510854144
+
+# Admin discord ID - Sharingan, Sambo
+admin_ids = [252382118510854144, 257075432828960769]
+
+# permissionkey location - added in manually
+permissionkeyfile = "../permissionkey.txt"
 
 # Used for fetching Hero icon images in embeds
 steam_cdn = "https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/"
