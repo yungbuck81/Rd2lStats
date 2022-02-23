@@ -11,9 +11,10 @@ from constants.globalConstants import fantasy_kill_multiplier, fantasy_death_mul
     pos1directory, pos1gpmfile, pos2directory, pos2gpmfile, pos3directory, pos3gpmfile, pos4directory, \
     pos4gpmfile, pos5directory, pos5gpmfile, pos1kdafile, pos2kdafile, pos4kdafile, pos3kdafile, pos5kdafile, \
     pos1fantasyfile, pos2fantasyfile, pos3fantasyfile, pos4fantasyfile, pos5fantasyfile, match_ids, \
-    opendota_api_matches_url, dotabuff_url, opendota_api_players_url, admin_ids, steam_cdn, permissionkeyfile, \
+    opendota_api_matches_url, dotabuff_url, opendota_api_players_url, steam_cdn, permissionkeyfile, \
     pos1currentdirectory, pos2currentdirectory, pos3currentdirectory, pos4currentdirectory, pos5currentdirectory
 from constants.hero_ids import get_hero_name
+from constants.localconfig import admin_id
 import time
 import ast
 import copy
@@ -1441,7 +1442,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
 
-    if message.author.id not in admin_ids:
+    if message.author.id != admin_id:
         return
 
     # Find duplicates for a single player across multiple roles

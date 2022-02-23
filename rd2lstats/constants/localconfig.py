@@ -1,0 +1,1 @@
+admin_id = 257075432828960769 #discord ID
