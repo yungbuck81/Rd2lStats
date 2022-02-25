@@ -11,21 +11,23 @@ from constants.globalConstants import fantasy_kill_multiplier, fantasy_death_mul
     pos1directory, pos1gpmfile, pos2directory, pos2gpmfile, pos3directory, pos3gpmfile, pos4directory, \
     pos4gpmfile, pos5directory, pos5gpmfile, pos1kdafile, pos2kdafile, pos4kdafile, pos3kdafile, pos5kdafile, \
     pos1fantasyfile, pos2fantasyfile, pos3fantasyfile, pos4fantasyfile, pos5fantasyfile, match_ids, \
-    opendota_api_matches_url, dotabuff_url, opendota_api_players_url, admin_ids, steam_cdn, permissionkeyfile
+    opendota_api_matches_url, dotabuff_url, opendota_api_players_url, admin_ids, steam_cdn, permissionkeyfile, \
+    pos1currentdirectory, pos2currentdirectory, pos3currentdirectory, pos4currentdirectory, pos5currentdirectory
 from constants.hero_ids import get_hero_name
 import time
 import ast
 import copy
 
 from src.utils import process_dict_values_into_list, list_difference, write_to_pos_based_csv_files, \
-    find_player_in_dictionaries, empty_all_stat_files
+    find_player_in_dictionaries, empty_all_stat_files, write_to_pos_based_csv_files_current_week, \
+    calculate_weighted_average
 
 client = discord.Client()
 permissionkey = open(permissionkeyfile).read()
 
 class Rd2lStats:
 
-    def __init__(self, api_key):
+    def __init__(self):
         self.highest_gpm_value = 0
         self.highest_gpm_hero = 0
         self.highest_gpm_player = ""
@@ -127,6 +129,40 @@ class Rd2lStats:
     def find_duplicates(self):
 
         # TODO: Improve data structure used to be a single object
+        gpm1current = process_dict_values_into_list(
+            dict(csv.reader(open(pos1currentdirectory + pos1gpmfile, 'r', encoding="utf-8", newline=''))))
+        gpm2current = process_dict_values_into_list(
+            dict(csv.reader(open(pos2currentdirectory + pos2gpmfile, 'r', encoding="utf-8", newline=''))))
+        gpm3current = process_dict_values_into_list(
+            dict(csv.reader(open(pos3currentdirectory + pos3gpmfile, 'r', encoding="utf-8", newline=''))))
+        gpm4current = process_dict_values_into_list(
+            dict(csv.reader(open(pos4currentdirectory + pos4gpmfile, 'r', encoding="utf-8", newline=''))))
+        gpm5current = process_dict_values_into_list(
+            dict(csv.reader(open(pos5currentdirectory + pos5gpmfile, 'r', encoding="utf-8", newline=''))))
+
+        kda1current = process_dict_values_into_list(
+            dict(csv.reader(open(pos1currentdirectory + pos1kdafile, 'r', encoding="utf-8", newline=''))))
+        kda2current = process_dict_values_into_list(
+            dict(csv.reader(open(pos2currentdirectory + pos2kdafile, 'r', encoding="utf-8", newline=''))))
+        kda3current = process_dict_values_into_list(
+            dict(csv.reader(open(pos3currentdirectory + pos3kdafile, 'r', encoding="utf-8", newline=''))))
+        kda4current = process_dict_values_into_list(
+            dict(csv.reader(open(pos4currentdirectory + pos4kdafile, 'r', encoding="utf-8", newline=''))))
+        kda5current = process_dict_values_into_list(
+            dict(csv.reader(open(pos5currentdirectory + pos5kdafile, 'r', encoding="utf-8", newline=''))))
+
+        fantasy1current = process_dict_values_into_list(
+            dict(csv.reader(open(pos1currentdirectory + pos1fantasyfile, 'r', encoding="utf-8", newline=''))))
+        fantasy2current = process_dict_values_into_list(
+            dict(csv.reader(open(pos2currentdirectory + pos2fantasyfile, 'r', encoding="utf-8", newline=''))))
+        fantasy3current = process_dict_values_into_list(
+            dict(csv.reader(open(pos3currentdirectory + pos3fantasyfile, 'r', encoding="utf-8", newline=''))))
+        fantasy4current = process_dict_values_into_list(
+            dict(csv.reader(open(pos4currentdirectory + pos4fantasyfile, 'r', encoding="utf-8", newline=''))))
+        fantasy5current = process_dict_values_into_list(
+            dict(csv.reader(open(pos5currentdirectory + pos5fantasyfile, 'r', encoding="utf-8", newline=''))))
+
+        # TODO: Improve data structure used to be a single object
         gpm1 = process_dict_values_into_list(
             dict(csv.reader(open(pos1directory + pos1gpmfile, 'r', encoding="utf-8", newline=''))))
         gpm2 = process_dict_values_into_list(
@@ -166,8 +202,8 @@ class Rd2lStats:
         gpm_player_set = {}
         user_choices = []
         for index, gpmdict in enumerate(
-                [copy.deepcopy(gpm1), copy.deepcopy(gpm2), copy.deepcopy(gpm3), copy.deepcopy(gpm4),
-                 copy.deepcopy(gpm5)]):
+                [copy.deepcopy(gpm1current), copy.deepcopy(gpm2current), copy.deepcopy(gpm3current), copy.deepcopy(gpm4current),
+                 copy.deepcopy(gpm5current)]):
             for player, gpm in copy.deepcopy(gpmdict).items():
                 if player in gpm_player_set:
                     print("-- Player GPM: {} found in {} and {} -- ".format(player, gpm_player_set[player], index + 1))
@@ -302,8 +338,8 @@ class Rd2lStats:
         kda_player_set = {}
         counter = -1
         for index, kdadict in enumerate(
-                [copy.deepcopy(kda1), copy.deepcopy(kda2), copy.deepcopy(kda3), copy.deepcopy(kda4),
-                 copy.deepcopy(kda5)]):
+                [copy.deepcopy(kda1current), copy.deepcopy(kda2current), copy.deepcopy(kda3current), copy.deepcopy(kda4current),
+                 copy.deepcopy(kda5current)]):
 
             for player, kda in copy.deepcopy(kdadict).items():
                 if player in kda_player_set:
@@ -438,8 +474,8 @@ class Rd2lStats:
         fantasy_player_set = {}
         counter = -1
         for index, fantasydict in enumerate(
-                [copy.deepcopy(fantasy1), copy.deepcopy(fantasy2), copy.deepcopy(fantasy3), copy.deepcopy(fantasy4),
-                 copy.deepcopy(fantasy5)]):
+                [copy.deepcopy(fantasy1current), copy.deepcopy(fantasy2current), copy.deepcopy(fantasy3current), copy.deepcopy(fantasy4current),
+                 copy.deepcopy(fantasy5current)]):
 
             for player, fantasy in copy.deepcopy(fantasydict).items():
                 if player in fantasy_player_set:
@@ -684,6 +720,41 @@ class Rd2lStats:
         fantasy5 = process_dict_values_into_list(
             dict(csv.reader(open(pos5directory + pos5fantasyfile, 'r+', encoding="utf-8", newline=''))))
 
+        # Current week stats
+
+        gpm1current = process_dict_values_into_list(
+            dict(csv.reader(open(pos1currentdirectory + pos1gpmfile, 'w+', encoding="utf-8", newline=''))))
+        gpm2current = process_dict_values_into_list(
+            dict(csv.reader(open(pos2currentdirectory + pos2gpmfile, 'w+', encoding="utf-8", newline=''))))
+        gpm3current = process_dict_values_into_list(
+            dict(csv.reader(open(pos3currentdirectory + pos3gpmfile, 'w+', encoding="utf-8", newline=''))))
+        gpm4current = process_dict_values_into_list(
+            dict(csv.reader(open(pos4currentdirectory + pos4gpmfile, 'w+', encoding="utf-8", newline=''))))
+        gpm5current = process_dict_values_into_list(
+            dict(csv.reader(open(pos5currentdirectory + pos5gpmfile, 'w+', encoding="utf-8", newline=''))))
+
+        kda1current = process_dict_values_into_list(
+            dict(csv.reader(open(pos1currentdirectory + pos1kdafile, 'w+', encoding="utf-8", newline=''))))
+        kda2current = process_dict_values_into_list(
+            dict(csv.reader(open(pos2currentdirectory + pos2kdafile, 'w+', encoding="utf-8", newline=''))))
+        kda3current = process_dict_values_into_list(
+            dict(csv.reader(open(pos3currentdirectory + pos3kdafile, 'w+', encoding="utf-8", newline=''))))
+        kda4current = process_dict_values_into_list(
+            dict(csv.reader(open(pos4currentdirectory + pos4kdafile, 'w+', encoding="utf-8", newline=''))))
+        kda5current = process_dict_values_into_list(
+            dict(csv.reader(open(pos5currentdirectory + pos5kdafile, 'w+', encoding="utf-8", newline=''))))
+
+        fantasy1current = process_dict_values_into_list(
+            dict(csv.reader(open(pos1currentdirectory + pos1fantasyfile, 'w+', encoding="utf-8", newline=''))))
+        fantasy2current = process_dict_values_into_list(
+            dict(csv.reader(open(pos2currentdirectory + pos2fantasyfile, 'w+', encoding="utf-8", newline=''))))
+        fantasy3current = process_dict_values_into_list(
+            dict(csv.reader(open(pos3currentdirectory + pos3fantasyfile, 'w+', encoding="utf-8", newline=''))))
+        fantasy4current = process_dict_values_into_list(
+            dict(csv.reader(open(pos4currentdirectory + pos4fantasyfile, 'w+', encoding="utf-8", newline=''))))
+        fantasy5current = process_dict_values_into_list(
+            dict(csv.reader(open(pos5currentdirectory + pos5fantasyfile, 'w+', encoding="utf-8", newline=''))))
+
         matches_size = len(match_ids)
         for match_index, matchid in enumerate(match_ids):
             response = requests.get(opendota_api_matches_url + matchid)
@@ -718,7 +789,7 @@ class Rd2lStats:
                         if radiant_pos_1 is None:
                             radiant_pos_1 = player
                         else:
-                            if radiant_pos_1['net_worth'] < player['net_worth']:
+                            if radiant_pos_1['lh_t'][11] < player["lh_t"][11]:
                                 radiant_pos_5 = radiant_pos_1
                                 radiant_pos_1 = player
                             else:
@@ -726,12 +797,12 @@ class Rd2lStats:
                     elif player['lane'] == 2:
                         if radiant_pos_2 is None:
                             radiant_pos_2 = player
-                        elif radiant_pos_2['net_worth'] < player['net_worth']:
+                        elif radiant_pos_2['lh_t'][11] < player['lh_t'][11]:
                             if radiant_pos_4 is None:
                                 radiant_pos_4 = radiant_pos_2
                                 radiant_pos_2 = player
                             elif radiant_pos_4 is not None:
-                                if radiant_pos_4['net_worth'] < radiant_pos_2["net_worth"]:
+                                if radiant_pos_4['lh_t'][11] < radiant_pos_2['lh_t'][11]:
                                     radiant_pos_5 = radiant_pos_4
                                     radiant_pos_4 = radiant_pos_2
                                     radiant_pos_2 = player
@@ -739,7 +810,7 @@ class Rd2lStats:
                                     radiant_pos_5 = radiant_pos_2
                                     radiant_pos_2 = player
                             elif radiant_pos_5 is not None:
-                                if radiant_pos_5['net_worth'] > radiant_pos_2["net_worth"]:
+                                if radiant_pos_5['lh_t'][11] > radiant_pos_2['lh_t'][11]:
                                     radiant_pos_4 = radiant_pos_5
                                     radiant_pos_5 = radiant_pos_2
                             else:
@@ -751,7 +822,7 @@ class Rd2lStats:
                         if radiant_pos_3 is None:
                             radiant_pos_3 = player
                         else:
-                            if radiant_pos_3['net_worth'] < player['net_worth']:
+                            if radiant_pos_3['lh_t'][11] < player['lh_t'][11]:
                                 radiant_pos_4 = radiant_pos_3
                                 radiant_pos_3 = player
                             else:
@@ -763,7 +834,7 @@ class Rd2lStats:
                         if dire_pos_3 is None:
                             dire_pos_3 = player
                         else:
-                            if dire_pos_3['net_worth'] < player['net_worth']:
+                            if dire_pos_3['lh_t'][11] < player['lh_t'][11]:
                                 dire_pos_4 = dire_pos_3
                                 dire_pos_3 = player
                             else:
@@ -771,12 +842,12 @@ class Rd2lStats:
                     elif player['lane'] == 2:
                         if dire_pos_2 is None:
                             dire_pos_2 = player
-                        elif dire_pos_2['net_worth'] < player['net_worth']:
+                        elif dire_pos_2['lh_t'][11] < player['lh_t'][11]:
                             if dire_pos_4 is None:
                                 dire_pos_4 = dire_pos_2
                                 dire_pos_2 = player
                             elif dire_pos_4 is not None:
-                                if dire_pos_4['net_worth'] < dire_pos_2["net_worth"]:
+                                if dire_pos_4['lh_t'][11] < dire_pos_2['lh_t'][11]:
                                     dire_pos_5 = dire_pos_4
                                     dire_pos_4 = dire_pos_2
                                     dire_pos_2 = player
@@ -784,7 +855,7 @@ class Rd2lStats:
                                     dire_pos_5 = dire_pos_2
                                     dire_pos_2 = player
                             elif dire_pos_5 is not None:
-                                if dire_pos_5['net_worth'] > dire_pos_2["net_worth"]:
+                                if dire_pos_5['lh_t'][11] > dire_pos_2['lh_t'][11]:
                                     dire_pos_4 = dire_pos_5
                                     dire_pos_5 = dire_pos_2
                             else:
@@ -796,7 +867,7 @@ class Rd2lStats:
                         if dire_pos_1 is None:
                             dire_pos_1 = player
                         else:
-                            if dire_pos_1['net_worth'] < player['net_worth']:
+                            if dire_pos_1['lh_t'][11] < player['lh_t'][11]:
                                 dire_pos_5 = dire_pos_1
                                 dire_pos_1 = player
                             else:
@@ -835,6 +906,17 @@ class Rd2lStats:
             # Parse response to add stat to each relevant dictionary based on role
             # TODO: Refactor to avoid code duplication
             for player in [radiant_pos_1, dire_pos_1]:
+
+                if str(player["account_id"]) in gpm1current:
+                    if isinstance(gpm1current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(gpm1current[str(player["account_id"])])
+                    else:
+                        evalList = gpm1current[str(player["account_id"])]
+                    gpm1current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + player["gold_per_min"]) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    gpm1current[str(player["account_id"])] = [player["gold_per_min"], 1]
+
                 if str(player["account_id"]) in gpm1:
                     if isinstance(gpm1[str(player["account_id"])], str):
                         evalList = ast.literal_eval(gpm1[str(player["account_id"])])
@@ -844,6 +926,16 @@ class Rd2lStats:
                         ((evalList[0] * evalList[1]) + player["gold_per_min"]) / (evalList[1] + 1), evalList[1] + 1]
                 else:
                     gpm1[str(player["account_id"])] = [player["gold_per_min"], 1]
+
+                if str(player["account_id"]) in kda1current:
+                    if isinstance(kda1current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(kda1current[str(player["account_id"])])
+                    else:
+                        evalList = kda1current[str(player["account_id"])]
+                    kda1current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + player["kda"]) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    kda1current[str(player["account_id"])] = [player["kda"], 1]
 
                 if str(player["account_id"]) in kda1:
                     if isinstance(kda1[str(player["account_id"])], str):
@@ -855,6 +947,16 @@ class Rd2lStats:
                         evalList[1] + 1]
                 else:
                     kda1[str(player["account_id"])] = [player["kda"], 1]
+
+                if str(player["account_id"]) in fantasy1current:
+                    if isinstance(fantasy1current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(fantasy1current[str(player["account_id"])])
+                    else:
+                        evalList = fantasy1current[str(player["account_id"])]
+                    fantasy1current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + self.get_fantasy_score(player)) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    fantasy1current[str(player["account_id"])] = [self.get_fantasy_score(player), 1]
 
                 if str(player["account_id"]) in fantasy1:
                     if isinstance(fantasy1[str(player["account_id"])], str):
@@ -871,6 +973,17 @@ class Rd2lStats:
                         print("Failed in getting fantasy score")
 
             for player in [radiant_pos_2, dire_pos_2]:
+
+                if str(player["account_id"]) in gpm2current:
+                    if isinstance(gpm2current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(gpm2current[str(player["account_id"])])
+                    else:
+                        evalList = gpm2current[str(player["account_id"])]
+                    gpm2current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + player["gold_per_min"]) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    gpm2current[str(player["account_id"])] = [player["gold_per_min"], 1]
+
                 if str(player["account_id"]) in gpm2:
                     if isinstance(gpm2[str(player["account_id"])], str):
                         evalList = ast.literal_eval(gpm2[str(player["account_id"])])
@@ -882,6 +995,16 @@ class Rd2lStats:
                 else:
                     gpm2[str(player["account_id"])] = [player["gold_per_min"], 1]
 
+                if str(player["account_id"]) in kda2current:
+                    if isinstance(kda2current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(kda2current[str(player["account_id"])])
+                    else:
+                        evalList = kda2current[str(player["account_id"])]
+                    kda2current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + player["kda"]) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    kda2current[str(player["account_id"])] = [player["kda"], 1]
+
                 if str(player["account_id"]) in kda2:
                     if isinstance(kda2[str(player["account_id"])], str):
                         evalList = ast.literal_eval(kda2[str(player["account_id"])])
@@ -892,6 +1015,17 @@ class Rd2lStats:
                         evalList[1] + 1]
                 else:
                     kda2[str(player["account_id"])] = [player["kda"], 1]
+
+                if str(player["account_id"]) in fantasy2current:
+                    if isinstance(fantasy2current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(fantasy2current[str(player["account_id"])])
+                    else:
+                        evalList = fantasy2current[str(player["account_id"])]
+                    fantasy2current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + self.get_fantasy_score(player)) / (evalList[1] + 1),
+                        evalList[1] + 1]
+                else:
+                    fantasy2current[str(player["account_id"])] = [self.get_fantasy_score(player), 1]
 
                 if str(player["account_id"]) in fantasy2:
                     if isinstance(fantasy2[str(player["account_id"])], str):
@@ -905,6 +1039,17 @@ class Rd2lStats:
                     fantasy2[str(player["account_id"])] = [self.get_fantasy_score(player), 1]
 
             for player in [radiant_pos_3, dire_pos_3]:
+
+                if str(player["account_id"]) in gpm3current:
+                    if isinstance(gpm3current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(gpm3current[str(player["account_id"])])
+                    else:
+                        evalList = gpm3current[str(player["account_id"])]
+                    gpm3current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + player["gold_per_min"]) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    gpm3current[str(player["account_id"])] = [player["gold_per_min"], 1]
+
                 if str(player["account_id"]) in gpm3:
                     if isinstance(gpm3[str(player["account_id"])], str):
                         evalList = ast.literal_eval(gpm3[str(player["account_id"])])
@@ -916,6 +1061,16 @@ class Rd2lStats:
                 else:
                     gpm3[str(player["account_id"])] = [player["gold_per_min"], 1]
 
+                if str(player["account_id"]) in kda3current:
+                    if isinstance(kda3current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(kda3current[str(player["account_id"])])
+                    else:
+                        evalList = kda3current[str(player["account_id"])]
+                    kda3current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + player["kda"]) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    kda3current[str(player["account_id"])] = [player["kda"], 1]
+
                 if str(player["account_id"]) in kda3:
                     if isinstance(kda3[str(player["account_id"])], str):
                         evalList = ast.literal_eval(kda3[str(player["account_id"])])
@@ -926,6 +1081,17 @@ class Rd2lStats:
                         evalList[1] + 1]
                 else:
                     kda3[str(player["account_id"])] = [player["kda"], 1]
+
+                if str(player["account_id"]) in fantasy3current:
+                    if isinstance(fantasy3current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(fantasy3current[str(player["account_id"])])
+                    else:
+                        evalList = fantasy3current[str(player["account_id"])]
+                    fantasy3current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + self.get_fantasy_score(player)) / (evalList[1] + 1),
+                        evalList[1] + 1]
+                else:
+                    fantasy3current[str(player["account_id"])] = [self.get_fantasy_score(player), 1]
 
                 if str(player["account_id"]) in fantasy3:
                     if isinstance(fantasy3[str(player["account_id"])], str):
@@ -939,6 +1105,17 @@ class Rd2lStats:
                     fantasy3[str(player["account_id"])] = [self.get_fantasy_score(player), 1]
 
             for player in [radiant_pos_4, dire_pos_4]:
+
+                if str(player["account_id"]) in gpm4current:
+                    if isinstance(gpm4current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(gpm4current[str(player["account_id"])])
+                    else:
+                        evalList = gpm4current[str(player["account_id"])]
+                    gpm4current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + player["gold_per_min"]) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    gpm4current[str(player["account_id"])] = [player["gold_per_min"], 1]
+
                 if str(player["account_id"]) in gpm4:
                     if isinstance(gpm4[str(player["account_id"])], str):
                         evalList = ast.literal_eval(gpm4[str(player["account_id"])])
@@ -950,6 +1127,16 @@ class Rd2lStats:
                 else:
                     gpm4[str(player["account_id"])] = [player["gold_per_min"], 1]
 
+                if str(player["account_id"]) in kda4current:
+                    if isinstance(kda4current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(kda4current[str(player["account_id"])])
+                    else:
+                        evalList = kda4current[str(player["account_id"])]
+                    kda4current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + player["kda"]) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    kda4current[str(player["account_id"])] = [player["kda"], 1]
+
                 if str(player["account_id"]) in kda4:
                     if isinstance(kda4[str(player["account_id"])], str):
                         evalList = ast.literal_eval(kda4[str(player["account_id"])])
@@ -960,6 +1147,17 @@ class Rd2lStats:
                         evalList[1] + 1]
                 else:
                     kda4[str(player["account_id"])] = [player["kda"], 1]
+
+                if str(player["account_id"]) in fantasy4current:
+                    if isinstance(fantasy4current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(fantasy4current[str(player["account_id"])])
+                    else:
+                        evalList = fantasy4current[str(player["account_id"])]
+                    fantasy4current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + self.get_fantasy_score(player)) / (evalList[1] + 1),
+                        evalList[1] + 1]
+                else:
+                    fantasy4current[str(player["account_id"])] = [self.get_fantasy_score(player), 1]
 
                 if str(player["account_id"]) in fantasy4:
                     if isinstance(fantasy4[str(player["account_id"])], str):
@@ -973,6 +1171,17 @@ class Rd2lStats:
                     fantasy4[str(player["account_id"])] = [self.get_fantasy_score(player), 1]
 
             for player in [radiant_pos_5, dire_pos_5]:
+
+                if str(player["account_id"]) in gpm5current:
+                    if isinstance(gpm5current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(gpm5current[str(player["account_id"])])
+                    else:
+                        evalList = gpm5current[str(player["account_id"])]
+                    gpm5current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + player["gold_per_min"]) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    gpm5current[str(player["account_id"])] = [player["gold_per_min"], 1]
+
                 if str(player["account_id"]) in gpm5:
                     if isinstance(gpm5[str(player["account_id"])], str):
                         evalList = ast.literal_eval(gpm5[str(player["account_id"])])
@@ -984,6 +1193,16 @@ class Rd2lStats:
                 else:
                     gpm5[str(player["account_id"])] = [player["gold_per_min"], 1]
 
+                if str(player["account_id"]) in kda5current:
+                    if isinstance(kda5current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(kda5current[str(player["account_id"])])
+                    else:
+                        evalList = kda5current[str(player["account_id"])]
+                    kda5current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + player["kda"]) / (evalList[1] + 1), evalList[1] + 1]
+                else:
+                    kda5current[str(player["account_id"])] = [player["kda"], 1]
+
                 if str(player["account_id"]) in kda5:
                     if isinstance(kda5[str(player["account_id"])], str):
                         evalList = ast.literal_eval(kda5[str(player["account_id"])])
@@ -994,6 +1213,17 @@ class Rd2lStats:
                         evalList[1] + 1]
                 else:
                     kda5[str(player["account_id"])] = [player["kda"], 1]
+
+                if str(player["account_id"]) in fantasy5current:
+                    if isinstance(fantasy5current[str(player["account_id"])], str):
+                        evalList = ast.literal_eval(fantasy5current[str(player["account_id"])])
+                    else:
+                        evalList = fantasy5current[str(player["account_id"])]
+                    fantasy5current[str(player["account_id"])] = [
+                        ((evalList[0] * evalList[1]) + self.get_fantasy_score(player)) / (evalList[1] + 1),
+                        evalList[1] + 1]
+                else:
+                    fantasy5current[str(player["account_id"])] = [self.get_fantasy_score(player), 1]
 
                 if str(player["account_id"]) in fantasy5:
                     if isinstance(fantasy5[str(player["account_id"])], str):
@@ -1185,6 +1415,12 @@ class Rd2lStats:
         print("Generated stats leaders file.")
         print("Creating position based stat files...")
 
+        write_to_pos_based_csv_files_current_week(gpm1current, kda1current, fantasy1current,
+                                     gpm2current, kda2current, fantasy2current,
+                                     gpm3current, kda3current, fantasy3current,
+                                     gpm4current, kda4current, fantasy4current,
+                                     gpm5current, kda5current, fantasy5current)
+
         write_to_pos_based_csv_files(gpm1, kda1, fantasy1,
                                      gpm2, kda2, fantasy2,
                                      gpm3, kda3, fantasy3,
@@ -1192,7 +1428,7 @@ class Rd2lStats:
                                      gpm5, kda5, fantasy5)
 
 
-rd2lstats = Rd2lStats("ODM5MzcyNjg4NDI2NTMyODY2.YJIsuw.S_lKUrYslMjZgPc-MaEXmC6R_CY")
+rd2lstats = Rd2lStats()
 
 
 # Function invoked when bot is live
@@ -1377,99 +1613,147 @@ async def on_message(message):
         print('Processed embed 16')
 
         filtered_gpm1 = {key: value for key, value in gpm1.items()}
-        sorted_dict_gpm = sorted(filtered_gpm1.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm1.items(), key=calculate_weighted_average, reverse=True)
         filtered_kda1 = {key: value for key, value in kda1.items()}
-        sorted_dict_kda = sorted(filtered_kda1.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_kda = sorted(filtered_kda1.items(), key=calculate_weighted_average, reverse=True)
         filtered_fantasy1 = {key: value for key, value in fantasy1.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy1.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy1.items(), key=calculate_weighted_average, reverse=True)
 
         embed11 = discord.Embed(title="Pos 1 Leaderboard", colour=discord.Colour(0x1))
-        embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
-        embed11.add_field(name="Player", value="{} \n{} \n{} \n{} \n{}".format(
+        embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
+        embed11.add_field(name="Player", value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
             rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
             rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
             rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
             rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
-            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0]),
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[5][0]),
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[6][0]),
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[7][0]),
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[8][0]),
+            rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[9][0])), inline=True)
         embed11.add_field(name="GPM",
-                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
                                                                 sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
-                                                                sorted_dict_gpm[4][1][0]), inline=True)
-        embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+                                                                sorted_dict_gpm[4][1][0], sorted_dict_gpm[5][1][0], sorted_dict_gpm[6][1][0],
+                                                                sorted_dict_gpm[7][1][0], sorted_dict_gpm[8][1][0],
+                                                                sorted_dict_gpm[9][1][0]), inline=True)
+        embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed11.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[9][0])), inline=True)
         embed11.add_field(name="KDA",
-                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
                                                                 sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
-                                                                sorted_dict_kda[4][1][0]), inline=True)
-        embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+                                                                sorted_dict_kda[4][1][0], sorted_dict_kda[5][1][0], sorted_dict_kda[6][1][0],
+                                                                sorted_dict_kda[7][1][0], sorted_dict_kda[8][1][0],
+                                                                sorted_dict_kda[9][1][0]), inline=True)
+        embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed11.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[9][0])), inline=True)
         embed11.add_field(name="Overall performance",
-                          value="{} \n{} \n{} \n{} \n{}".format(round(sorted_dict_fantasy[0][1][0], 2),
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(round(sorted_dict_fantasy[0][1][0], 2),
                                                                 round(sorted_dict_fantasy[1][1][0], 2),
                                                                 round(sorted_dict_fantasy[2][1][0], 2),
                                                                 round(sorted_dict_fantasy[3][1][0], 2),
-                                                                round(sorted_dict_fantasy[4][1][0], 2)), inline=True)
+                                                                round(sorted_dict_fantasy[4][1][0], 2),
+                                                                round(sorted_dict_fantasy[5][1][0], 2),
+                                                                round(sorted_dict_fantasy[6][1][0], 2),
+                                                                round(sorted_dict_fantasy[7][1][0], 2),
+                                                                round(sorted_dict_fantasy[8][1][0], 2),
+                                                                round(sorted_dict_fantasy[9][1][0], 2)), inline=True)
 
         print('Processed embed 11')
 
         filtered_gpm2 = {key: value for key, value in gpm2.items()}
-        sorted_dict_gpm = sorted(filtered_gpm2.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm2.items(), key=calculate_weighted_average, reverse=True)
         filtered_kda2 = {key: value for key, value in kda2.items()}
-        sorted_dict_kda = sorted(filtered_kda2.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_kda = sorted(filtered_kda2.items(), key=calculate_weighted_average, reverse=True)
         filtered_fantasy2 = {key: value for key, value in fantasy2.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy2.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy2.items(), key=calculate_weighted_average, reverse=True)
 
         embed12 = discord.Embed(title="Pos 2 Leaderboard", colour=discord.Colour(0x1))
-        embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed12.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[9][0])), inline=True)
         embed12.add_field(name="GPM",
-                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
                                                                 sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
-                                                                sorted_dict_gpm[4][1][0]), inline=True)
-        embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+                                                                sorted_dict_gpm[4][1][0], sorted_dict_gpm[5][1][0], sorted_dict_gpm[6][1][0],
+                                                                sorted_dict_gpm[7][1][0], sorted_dict_gpm[8][1][0],
+                                                                sorted_dict_gpm[9][1][0]), inline=True)
+        embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed12.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[9][0])), inline=True)
         embed12.add_field(name="KDA",
-                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
                                                                 sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
-                                                                sorted_dict_kda[4][1][0]), inline=True)
-        embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+                                                                sorted_dict_kda[4][1][0], sorted_dict_kda[5][1][0], sorted_dict_kda[6][1][0],
+                                                                sorted_dict_kda[7][1][0], sorted_dict_kda[8][1][0],
+                                                                sorted_dict_kda[9][1][0]), inline=True)
+        embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed12.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[9][0])), inline=True)
         embed12.add_field(name="Overall performance",
-                          value="{} \n{} \n{} \n{} \n{}".format(round(sorted_dict_fantasy[0][1][0], 2),
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(round(sorted_dict_fantasy[0][1][0], 2),
                                                                 round(sorted_dict_fantasy[1][1][0], 2),
                                                                 round(sorted_dict_fantasy[2][1][0], 2),
                                                                 round(sorted_dict_fantasy[3][1][0], 2),
-                                                                round(sorted_dict_fantasy[4][1][0], 2)), inline=True)
+                                                                round(sorted_dict_fantasy[4][1][0], 2),
+                                                                round(sorted_dict_fantasy[5][1][0], 2),
+                                                                round(sorted_dict_fantasy[6][1][0], 2),
+                                                                round(sorted_dict_fantasy[7][1][0], 2),
+                                                                round(sorted_dict_fantasy[8][1][0], 2),
+                                                                round(sorted_dict_fantasy[9][1][0], 2)), inline=True)
 
         print('Processed embed 12')
         print('Sleeping for 60s...')
@@ -1477,152 +1761,222 @@ async def on_message(message):
         time.sleep(60)
 
         filtered_gpm3 = {key: value for key, value in gpm3.items()}
-        sorted_dict_gpm = sorted(filtered_gpm3.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm3.items(), key=calculate_weighted_average, reverse=True)
         filtered_kda3 = {key: value for key, value in kda3.items()}
-        sorted_dict_kda = sorted(filtered_kda3.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_kda = sorted(filtered_kda3.items(), key=calculate_weighted_average, reverse=True)
         filtered_fantasy3 = {key: value for key, value in fantasy3.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy3.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy3.items(), key=calculate_weighted_average, reverse=True)
 
         embed13 = discord.Embed(title="Pos 3 Leaderboard", colour=discord.Colour(0x1))
-        embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed13.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[9][0])), inline=True)
         embed13.add_field(name="GPM",
-                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
                                                                 sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
-                                                                sorted_dict_gpm[4][1][0]), inline=True)
-        embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+                                                                sorted_dict_gpm[4][1][0], sorted_dict_gpm[5][1][0], sorted_dict_gpm[6][1][0],
+                                                                sorted_dict_gpm[7][1][0], sorted_dict_gpm[8][1][0],
+                                                                sorted_dict_gpm[9][1][0]), inline=True)
+        embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed13.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[9][0])), inline=True)
         embed13.add_field(name="KDA",
-                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
                                                                 sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
-                                                                sorted_dict_kda[4][1][0]), inline=True)
-        embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+                                                                sorted_dict_kda[4][1][0], sorted_dict_kda[5][1][0], sorted_dict_kda[6][1][0],
+                                                                sorted_dict_kda[7][1][0], sorted_dict_kda[8][1][0],
+                                                                sorted_dict_kda[9][1][0]), inline=True)
+        embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed13.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[9][0])), inline=True)
         embed13.add_field(name="Overall performance",
-                          value="{} \n{} \n{} \n{} \n{}".format(round(sorted_dict_fantasy[0][1][0], 2),
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(round(sorted_dict_fantasy[0][1][0], 2),
                                                                 round(sorted_dict_fantasy[1][1][0], 2),
                                                                 round(sorted_dict_fantasy[2][1][0], 2),
                                                                 round(sorted_dict_fantasy[3][1][0], 2),
-                                                                round(sorted_dict_fantasy[4][1][0], 2)), inline=True)
+                                                                round(sorted_dict_fantasy[4][1][0], 2),
+                                                                round(sorted_dict_fantasy[5][1][0], 2),
+                                                                round(sorted_dict_fantasy[6][1][0], 2),
+                                                                round(sorted_dict_fantasy[7][1][0], 2),
+                                                                round(sorted_dict_fantasy[8][1][0], 2),
+                                                                round(sorted_dict_fantasy[9][1][0], 2)), inline=True)
 
         print('Processed embed 13')
 
         filtered_gpm4 = {key: value for key, value in gpm4.items()}
-        sorted_dict_gpm = sorted(filtered_gpm4.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm4.items(), key=calculate_weighted_average, reverse=True)
         filtered_kda4 = {key: value for key, value in kda4.items()}
-        sorted_dict_kda = sorted(filtered_kda4.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_kda = sorted(filtered_kda4.items(), key=calculate_weighted_average, reverse=True)
         filtered_fantasy4 = {key: value for key, value in fantasy4.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy4.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy4.items(), key=calculate_weighted_average, reverse=True)
 
         embed14 = discord.Embed(title="Pos 4 Leaderboard", colour=discord.Colour(0x1))
-        embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed14.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[9][0])), inline=True)
         embed14.add_field(name="GPM",
-                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
                                                                 sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
-                                                                sorted_dict_gpm[4][1][0]), inline=True)
-        embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+                                                                sorted_dict_gpm[4][1][0], sorted_dict_gpm[5][1][0], sorted_dict_gpm[6][1][0],
+                                                                sorted_dict_gpm[7][1][0], sorted_dict_gpm[8][1][0],
+                                                                sorted_dict_gpm[9][1][0]), inline=True)
+        embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed14.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[9][0])), inline=True)
         embed14.add_field(name="KDA",
-                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
                                                                 sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
-                                                                sorted_dict_kda[4][1][0]), inline=True)
-        embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+                                                                sorted_dict_kda[4][1][0], sorted_dict_kda[5][1][0], sorted_dict_kda[6][1][0],
+                                                                sorted_dict_kda[7][1][0], sorted_dict_kda[8][1][0],
+                                                                sorted_dict_kda[9][1][0]), inline=True)
+        embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed14.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[9][0])), inline=True)
         embed14.add_field(name="Overall performance",
-                          value="{} \n{} \n{} \n{} \n{}".format(round(sorted_dict_fantasy[0][1][0], 2),
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(round(sorted_dict_fantasy[0][1][0], 2),
                                                                 round(sorted_dict_fantasy[1][1][0], 2),
                                                                 round(sorted_dict_fantasy[2][1][0], 2),
                                                                 round(sorted_dict_fantasy[3][1][0], 2),
-                                                                round(sorted_dict_fantasy[4][1][0], 2)), inline=True)
+                                                                round(sorted_dict_fantasy[4][1][0], 2),
+                                                                round(sorted_dict_fantasy[5][1][0], 2),
+                                                                round(sorted_dict_fantasy[6][1][0], 2),
+                                                                round(sorted_dict_fantasy[7][1][0], 2),
+                                                                round(sorted_dict_fantasy[8][1][0], 2),
+                                                                round(sorted_dict_fantasy[9][1][0], 2)), inline=True)
 
         print('Processed embed 14')
 
         filtered_gpm5 = {key: value for key, value in gpm5.items()}
-        sorted_dict_gpm = sorted(filtered_gpm5.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm5.items(), key=calculate_weighted_average, reverse=True)
         filtered_kda5 = {key: value for key, value in kda5.items()}
-        sorted_dict_kda = sorted(filtered_kda5.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_kda = sorted(filtered_kda5.items(), key=calculate_weighted_average, reverse=True)
         filtered_fantasy5 = {key: value for key, value in fantasy5.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy5.items(), key=lambda kv: kv[1][0], reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy5.items(), key=calculate_weighted_average, reverse=True)
         print('Sleeping for 60s...')
 
         time.sleep(60)
 
         embed15 = discord.Embed(title="Pos 5 Leaderboard", colour=discord.Colour(0x1))
-        embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+        embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed15.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_gpm[9][0])), inline=True)
         embed15.add_field(name="GPM",
-                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(sorted_dict_gpm[0][1][0], sorted_dict_gpm[1][1][0],
                                                                 sorted_dict_gpm[2][1][0], sorted_dict_gpm[3][1][0],
-                                                                sorted_dict_gpm[4][1][0]), inline=True)
-        embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+                                                                sorted_dict_gpm[4][1][0], sorted_dict_gpm[5][1][0], sorted_dict_gpm[6][1][0],
+                                                                sorted_dict_gpm[7][1][0], sorted_dict_gpm[8][1][0],
+                                                                sorted_dict_gpm[9][1][0]), inline=True)
+        embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed15.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(rd2lstats.get_player_name_for_account_id(sorted_dict_kda[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_kda[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_kda[9][0])), inline=True)
         embed15.add_field(name="KDA",
-                          value="{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(sorted_dict_kda[0][1][0], sorted_dict_kda[1][1][0],
                                                                 sorted_dict_kda[2][1][0], sorted_dict_kda[3][1][0],
-                                                                sorted_dict_kda[4][1][0]), inline=True)
-        embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5.", inline=True)
+                                                                sorted_dict_kda[4][1][0], sorted_dict_kda[5][1][0], sorted_dict_kda[6][1][0],
+                                                                sorted_dict_kda[7][1][0], sorted_dict_kda[8][1][0],
+                                                                sorted_dict_kda[9][1][0]), inline=True)
+        embed15.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
         embed15.add_field(name="Player",
-                          value="{} \n{} \n{} \n{} \n{}".format(
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[0][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[1][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[2][0]),
                               rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[3][0]),
-                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0])), inline=True)
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[4][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[5][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[6][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[7][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[8][0]),
+                              rd2lstats.get_player_name_for_account_id(sorted_dict_fantasy[9][0])), inline=True)
         embed15.add_field(name="Overall performance",
-                          value="{} \n{} \n{} \n{} \n{}".format(round(sorted_dict_fantasy[0][1][0], 2),
+                          value="{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n{}".format(round(sorted_dict_fantasy[0][1][0], 2),
                                                                 round(sorted_dict_fantasy[1][1][0], 2),
                                                                 round(sorted_dict_fantasy[2][1][0], 2),
                                                                 round(sorted_dict_fantasy[3][1][0], 2),
-                                                                round(sorted_dict_fantasy[4][1][0], 2)), inline=True)
+                                                                round(sorted_dict_fantasy[4][1][0], 2),
+                                                                round(sorted_dict_fantasy[5][1][0], 2),
+                                                                round(sorted_dict_fantasy[6][1][0], 2),
+                                                                round(sorted_dict_fantasy[7][1][0], 2),
+                                                                round(sorted_dict_fantasy[8][1][0], 2),
+                                                                round(sorted_dict_fantasy[9][1][0], 2)), inline=True)
 
         print('Processed embed 15')
 

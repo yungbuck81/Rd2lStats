@@ -1,6 +1,6 @@
 
 # Contains the current week match ID's to parse stats for
-match_ids = ["6406924213", "6406971511", "6406923278", "6406958210", "6406921193", "6406966432", "6406923466", "6406960155", "6406935527", "6406973127", "6406935796", "6406970153", "6406938456", "6406972893", "6406968044", "6406923415", "6406965166", "6406919757", "6406963492"]
+match_ids = ["6442337208", "6442340533", "6442374644", "6442384483", "6442392229", "6442339747", "6442369562", "6442336462", "6442372668", "6442339180", "6442372121", "6442336463", "6442385345", "6442340814", "6442380377"]
 
 
 # Admin discord ID - Sharingan, Sambo
@@ -36,30 +36,35 @@ fantasy_stuns_multiplier = 0.05
 
 # Pos 1 constants
 pos1directory = "../pos1stats/"
+pos1currentdirectory = "../current_week_stats/pos1stats/"
 pos1gpmfile = "pos1gpmLeaderboard.csv"
 pos1kdafile = "pos1kdaLeaderboard.csv"
 pos1fantasyfile = "pos1fantasyLeaderboard.csv"
 
 # Pos 2 constants
 pos2directory = "../pos2stats/"
+pos2currentdirectory = "../current_week_stats/pos2stats/"
 pos2gpmfile = "pos2gpmLeaderboard.csv"
 pos2kdafile = "pos2kdaLeaderboard.csv"
 pos2fantasyfile = "pos2fantasyLeaderboard.csv"
 
 # Pos 3 constants
 pos3directory = "../pos3stats/"
+pos3currentdirectory = "../current_week_stats/pos3stats/"
 pos3gpmfile = "pos3gpmLeaderboard.csv"
 pos3kdafile = "pos3kdaLeaderboard.csv"
 pos3fantasyfile = "pos3fantasyLeaderboard.csv"
 
 # Pos 4 constants
 pos4directory = "../pos4stats/"
+pos4currentdirectory = "../current_week_stats/pos4stats/"
 pos4gpmfile = "pos4gpmLeaderboard.csv"
 pos4kdafile = "pos4kdaLeaderboard.csv"
 pos4fantasyfile = "pos4fantasyLeaderboard.csv"
 
 # Pos 5 constants
 pos5directory = "../pos5stats/"
+pos5currentdirectory = "../current_week_stats/pos5stats/"
 pos5gpmfile = "pos5gpmLeaderboard.csv"
 pos5kdafile = "pos5kdaLeaderboard.csv"
 pos5fantasyfile = "pos5fantasyLeaderboard.csv"
