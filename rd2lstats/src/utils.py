@@ -6,7 +6,7 @@ import csv
 from constants.globalConstants import pos1directory, pos1gpmfile, pos1kdafile, pos1fantasyfile, pos2gpmfile, \
     pos2directory, pos2kdafile, pos2fantasyfile, pos3directory, pos3gpmfile, pos3kdafile, pos3fantasyfile, \
     pos4directory, pos4gpmfile, pos4kdafile, pos4fantasyfile, pos5directory, pos5gpmfile, pos5kdafile, pos5fantasyfile, \
-    pos1currentdirectory, pos2currentdirectory, pos3currentdirectory, pos4currentdirectory, pos5currentdirectory
+    pos1currentdirectory, pos2currentdirectory, pos3currentdirectory, pos4currentdirectory, pos5currentdirectory, current_week
 
 
 def list_difference(li1, li2):
@@ -42,8 +42,11 @@ def find_player_in_dictionaries(player, dict1, dict2, dict3, dict4, dict5):
         return
 
 # Calculate weighted average given a stat
-def calculate_weighted_average(stat):
-    return stat[1][0]*stat[1][1]
+def passes_role_threshold(stat):
+    games_played = current_week * 2
+    if(stat[1][1] < 0.4 * games_played):
+        return 0
+    return stat[1][0]
 
 # Function that takes in position based stats dictionaries and writes them to csv files for current week stats only
 def write_to_pos_based_csv_files_current_week(gpm1, kda1, fantasy1,

@@ -21,7 +21,7 @@ import copy
 
 from src.utils import process_dict_values_into_list, list_difference, write_to_pos_based_csv_files, \
     find_player_in_dictionaries, empty_all_stat_files, write_to_pos_based_csv_files_current_week, \
-    calculate_weighted_average
+    passes_role_threshold
 
 client = discord.Client()
 permissionkey = open(permissionkeyfile).read()
@@ -1624,11 +1624,11 @@ async def on_message(message):
         print('Processed embed 16')
 
         filtered_gpm1 = {key: value for key, value in gpm1.items()}
-        sorted_dict_gpm = sorted(filtered_gpm1.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm1.items(), key=passes_role_threshold, reverse=True)
         filtered_kda1 = {key: value for key, value in kda1.items()}
-        sorted_dict_kda = sorted(filtered_kda1.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_kda = sorted(filtered_kda1.items(), key=passes_role_threshold, reverse=True)
         filtered_fantasy1 = {key: value for key, value in fantasy1.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy1.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy1.items(), key=passes_role_threshold, reverse=True)
 
         embed11 = discord.Embed(title="Pos 1 Leaderboard", colour=discord.Colour(0x1))
         embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
@@ -1696,11 +1696,11 @@ async def on_message(message):
         print('Processed embed 11')
 
         filtered_gpm2 = {key: value for key, value in gpm2.items()}
-        sorted_dict_gpm = sorted(filtered_gpm2.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm2.items(), key=passes_role_threshold, reverse=True)
         filtered_kda2 = {key: value for key, value in kda2.items()}
-        sorted_dict_kda = sorted(filtered_kda2.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_kda = sorted(filtered_kda2.items(), key=passes_role_threshold, reverse=True)
         filtered_fantasy2 = {key: value for key, value in fantasy2.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy2.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy2.items(), key=passes_role_threshold, reverse=True)
 
         embed12 = discord.Embed(title="Pos 2 Leaderboard", colour=discord.Colour(0x1))
         embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
@@ -1772,11 +1772,11 @@ async def on_message(message):
         time.sleep(60)
 
         filtered_gpm3 = {key: value for key, value in gpm3.items()}
-        sorted_dict_gpm = sorted(filtered_gpm3.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm3.items(), key=passes_role_threshold, reverse=True)
         filtered_kda3 = {key: value for key, value in kda3.items()}
-        sorted_dict_kda = sorted(filtered_kda3.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_kda = sorted(filtered_kda3.items(), key=passes_role_threshold, reverse=True)
         filtered_fantasy3 = {key: value for key, value in fantasy3.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy3.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy3.items(), key=passes_role_threshold, reverse=True)
 
         embed13 = discord.Embed(title="Pos 3 Leaderboard", colour=discord.Colour(0x1))
         embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
@@ -1845,11 +1845,11 @@ async def on_message(message):
         print('Processed embed 13')
 
         filtered_gpm4 = {key: value for key, value in gpm4.items()}
-        sorted_dict_gpm = sorted(filtered_gpm4.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm4.items(), key=passes_role_threshold, reverse=True)
         filtered_kda4 = {key: value for key, value in kda4.items()}
-        sorted_dict_kda = sorted(filtered_kda4.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_kda = sorted(filtered_kda4.items(), key=passes_role_threshold, reverse=True)
         filtered_fantasy4 = {key: value for key, value in fantasy4.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy4.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy4.items(), key=passes_role_threshold, reverse=True)
 
         embed14 = discord.Embed(title="Pos 4 Leaderboard", colour=discord.Colour(0x1))
         embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
@@ -1917,11 +1917,11 @@ async def on_message(message):
         print('Processed embed 14')
 
         filtered_gpm5 = {key: value for key, value in gpm5.items()}
-        sorted_dict_gpm = sorted(filtered_gpm5.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm5.items(), key=passes_role_threshold, reverse=True)
         filtered_kda5 = {key: value for key, value in kda5.items()}
-        sorted_dict_kda = sorted(filtered_kda5.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_kda = sorted(filtered_kda5.items(), key=passes_role_threshold, reverse=True)
         filtered_fantasy5 = {key: value for key, value in fantasy5.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy5.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy5.items(), key=passes_role_threshold, reverse=True)
         print('Sleeping for 60s...')
 
         time.sleep(60)
