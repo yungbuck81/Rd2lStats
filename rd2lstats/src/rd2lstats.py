@@ -11,9 +11,10 @@ from constants.globalConstants import fantasy_kill_multiplier, fantasy_death_mul
     pos1directory, pos1gpmfile, pos2directory, pos2gpmfile, pos3directory, pos3gpmfile, pos4directory, \
     pos4gpmfile, pos5directory, pos5gpmfile, pos1kdafile, pos2kdafile, pos4kdafile, pos3kdafile, pos5kdafile, \
     pos1fantasyfile, pos2fantasyfile, pos3fantasyfile, pos4fantasyfile, pos5fantasyfile, match_ids, \
-    opendota_api_matches_url, dotabuff_url, opendota_api_players_url, admin_ids, steam_cdn, permissionkeyfile, \
+    opendota_api_matches_url, dotabuff_url, opendota_api_players_url, steam_cdn, permissionkeyfile, \
     pos1currentdirectory, pos2currentdirectory, pos3currentdirectory, pos4currentdirectory, pos5currentdirectory
 from constants.hero_ids import get_hero_name
+from constants.localconfig import admin_id
 import time
 import ast
 import copy
@@ -207,127 +208,134 @@ class Rd2lStats:
             for player, gpm in copy.deepcopy(gpmdict).items():
                 if player in gpm_player_set:
                     print("-- Player GPM: {} found in {} and {} -- ".format(player, gpm_player_set[player], index + 1))
-                    uinput = int(input("Which position should be selected? 1,2,3,4,5 for roles or 0 to keep separate"))
-                    user_choices.append(uinput)
-                    if uinput == 1:
-                        cumulative = gpm_value_set[player][0] * gpm_value_set[player][1]
-                        matches = gpm_value_set[player][1] + gpm[1]
-                        evalList = [(cumulative + (gpm[0] * gpm[1])) / matches, matches]
-                        gpm1[player] = evalList
-                        if index + 1 == 1:
-                            if gpm_player_set[player] == 2:
-                                gpm2.pop(player)
-                            if gpm_player_set[player] == 3:
-                                gpm3.pop(player)
-                            if gpm_player_set[player] == 4:
-                                gpm4.pop(player)
-                            if gpm_player_set[player] == 5:
-                                gpm5.pop(player)
-                        elif gpm_player_set[player] == 1:
-                            if index + 1 == 2:
-                                gpm2.pop(player)
-                            if index + 1 == 3:
-                                gpm3.pop(player)
-                            if index + 1 == 4:
-                                gpm4.pop(player)
-                            if index + 1 == 5:
-                                gpm5.pop(player)
-                    elif uinput == 2:
-                        cumulative = gpm_value_set[player][0] * gpm_value_set[player][1]
-                        matches = gpm_value_set[player][1] + gpm[1]
-                        evalList = [(cumulative + (gpm[0] * gpm[1])) / matches, matches]
-                        gpm2[player] = evalList
-                        if index + 1 == 2:
-                            if gpm_player_set[player] == 1:
-                                gpm1.pop(player)
-                            if gpm_player_set[player] == 3:
-                                gpm3.pop(player)
-                            if gpm_player_set[player] == 4:
-                                gpm4.pop(player)
-                            if gpm_player_set[player] == 5:
-                                gpm5.pop(player)
-                        elif gpm_player_set[player] == 2:
-                            if index + 1 == 1:
-                                gpm1.pop(player)
-                            if index + 1 == 3:
-                                gpm3.pop(player)
-                            if index + 1 == 4:
-                                gpm4.pop(player)
-                            if index + 1 == 5:
-                                gpm5.pop(player)
-                    elif uinput == 3:
-                        cumulative = gpm_value_set[player][0] * gpm_value_set[player][1]
-                        matches = gpm_value_set[player][1] + gpm[1]
-                        evalList = [(cumulative + (gpm[0] * gpm[1])) / matches, matches]
-                        gpm3[player] = evalList
-                        if index + 1 == 3:
-                            if gpm_player_set[player] == 2:
-                                gpm2.pop(player)
-                            if gpm_player_set[player] == 1:
-                                gpm1.pop(player)
-                            if gpm_player_set[player] == 4:
-                                gpm4.pop(player)
-                            if gpm_player_set[player] == 5:
-                                gpm5.pop(player)
-                        elif gpm_player_set[player] == 3:
-                            if index + 1 == 2:
-                                gpm2.pop(player)
-                            if index + 1 == 1:
-                                gpm1.pop(player)
-                            if index + 1 == 4:
-                                gpm4.pop(player)
-                            if index + 1 == 5:
-                                gpm5.pop(player)
-                    elif uinput == 4:
-                        cumulative = gpm_value_set[player][0] * gpm_value_set[player][1]
-                        matches = gpm_value_set[player][1] + gpm[1]
-                        evalList = [(cumulative + (gpm[0] * gpm[1])) / matches, matches]
-                        gpm4[player] = evalList
-                        if index + 1 == 4:
-                            if gpm_player_set[player] == 2:
-                                gpm2.pop(player)
-                            if gpm_player_set[player] == 3:
-                                gpm3.pop(player)
-                            if gpm_player_set[player] == 1:
-                                gpm1.pop(player)
-                            if gpm_player_set[player] == 5:
-                                gpm5.pop(player)
-                        elif gpm_player_set[player] == 4:
-                            if index + 1 == 2:
-                                gpm2.pop(player)
-                            if index + 1 == 3:
-                                gpm3.pop(player)
-                            if index + 1 == 1:
-                                gpm1.pop(player)
-                            if index + 1 == 5:
-                                gpm5.pop(player)
-                    elif uinput == 5:
-                        cumulative = gpm_value_set[player][0] * gpm_value_set[player][1]
-                        matches = gpm_value_set[player][1] + gpm[1]
-                        evalList = [(cumulative + (gpm[0] * gpm[1])) / matches, matches]
-                        gpm5[player] = evalList
-                        if index + 1 == 5:
-                            if gpm_player_set[player] == 2:
-                                gpm2.pop(player)
-                            if gpm_player_set[player] == 3:
-                                gpm3.pop(player)
-                            if gpm_player_set[player] == 4:
-                                gpm4.pop(player)
-                            if gpm_player_set[player] == 1:
-                                gpm1.pop(player)
-                        elif gpm_player_set[player] == 5:
-                            if index + 1 == 2:
-                                gpm2.pop(player)
-                            if index + 1 == 3:
-                                gpm3.pop(player)
-                            if index + 1 == 4:
-                                gpm4.pop(player)
-                            if index + 1 == 1:
-                                gpm1.pop(player)
-                    elif uinput == 0:
-                        print("Keeping both roles stats")
-                    else:
-                        print("Option not recognized. Please enter 1, 2 or 3")
+                    foundInput = False
+                    while(not foundInput):
+                        try:
+                            uinput = int(input("Which position should be selected? 1,2,3,4,5 for roles or 0 to keep separate"))
+                            user_choices.append(uinput)
+                            foundInput = True # Assume true and set back to false if needed
+                            if uinput == 1:
+                                cumulative = gpm_value_set[player][0] * gpm_value_set[player][1]
+                                matches = gpm_value_set[player][1] + gpm[1]
+                                evalList = [(cumulative + (gpm[0] * gpm[1])) / matches, matches]
+                                gpm1[player] = evalList
+                                if index + 1 == 1:
+                                    if gpm_player_set[player] == 2:
+                                        gpm2.pop(player)
+                                    if gpm_player_set[player] == 3:
+                                        gpm3.pop(player)
+                                    if gpm_player_set[player] == 4:
+                                        gpm4.pop(player)
+                                    if gpm_player_set[player] == 5:
+                                        gpm5.pop(player)
+                                elif gpm_player_set[player] == 1:
+                                    if index + 1 == 2:
+                                        gpm2.pop(player)
+                                    if index + 1 == 3:
+                                        gpm3.pop(player)
+                                    if index + 1 == 4:
+                                        gpm4.pop(player)
+                                    if index + 1 == 5:
+                                        gpm5.pop(player)
+                            elif uinput == 2:
+                                cumulative = gpm_value_set[player][0] * gpm_value_set[player][1]
+                                matches = gpm_value_set[player][1] + gpm[1]
+                                evalList = [(cumulative + (gpm[0] * gpm[1])) / matches, matches]
+                                gpm2[player] = evalList
+                                if index + 1 == 2:
+                                    if gpm_player_set[player] == 1:
+                                        gpm1.pop(player)
+                                    if gpm_player_set[player] == 3:
+                                        gpm3.pop(player)
+                                    if gpm_player_set[player] == 4:
+                                        gpm4.pop(player)
+                                    if gpm_player_set[player] == 5:
+                                        gpm5.pop(player)
+                                elif gpm_player_set[player] == 2:
+                                    if index + 1 == 1:
+                                        gpm1.pop(player)
+                                    if index + 1 == 3:
+                                        gpm3.pop(player)
+                                    if index + 1 == 4:
+                                        gpm4.pop(player)
+                                    if index + 1 == 5:
+                                        gpm5.pop(player)
+                            elif uinput == 3:
+                                cumulative = gpm_value_set[player][0] * gpm_value_set[player][1]
+                                matches = gpm_value_set[player][1] + gpm[1]
+                                evalList = [(cumulative + (gpm[0] * gpm[1])) / matches, matches]
+                                gpm3[player] = evalList
+                                if index + 1 == 3:
+                                    if gpm_player_set[player] == 2:
+                                        gpm2.pop(player)
+                                    if gpm_player_set[player] == 1:
+                                        gpm1.pop(player)
+                                    if gpm_player_set[player] == 4:
+                                        gpm4.pop(player)
+                                    if gpm_player_set[player] == 5:
+                                        gpm5.pop(player)
+                                elif gpm_player_set[player] == 3:
+                                    if index + 1 == 2:
+                                        gpm2.pop(player)
+                                    if index + 1 == 1:
+                                        gpm1.pop(player)
+                                    if index + 1 == 4:
+                                        gpm4.pop(player)
+                                    if index + 1 == 5:
+                                        gpm5.pop(player)
+                            elif uinput == 4:
+                                cumulative = gpm_value_set[player][0] * gpm_value_set[player][1]
+                                matches = gpm_value_set[player][1] + gpm[1]
+                                evalList = [(cumulative + (gpm[0] * gpm[1])) / matches, matches]
+                                gpm4[player] = evalList
+                                if index + 1 == 4:
+                                    if gpm_player_set[player] == 2:
+                                        gpm2.pop(player)
+                                    if gpm_player_set[player] == 3:
+                                        gpm3.pop(player)
+                                    if gpm_player_set[player] == 1:
+                                        gpm1.pop(player)
+                                    if gpm_player_set[player] == 5:
+                                        gpm5.pop(player)
+                                elif gpm_player_set[player] == 4:
+                                    if index + 1 == 2:
+                                        gpm2.pop(player)
+                                    if index + 1 == 3:
+                                        gpm3.pop(player)
+                                    if index + 1 == 1:
+                                        gpm1.pop(player)
+                                    if index + 1 == 5:
+                                        gpm5.pop(player)
+                            elif uinput == 5:
+                                cumulative = gpm_value_set[player][0] * gpm_value_set[player][1]
+                                matches = gpm_value_set[player][1] + gpm[1]
+                                evalList = [(cumulative + (gpm[0] * gpm[1])) / matches, matches]
+                                gpm5[player] = evalList
+                                if index + 1 == 5:
+                                    if gpm_player_set[player] == 2:
+                                        gpm2.pop(player)
+                                    if gpm_player_set[player] == 3:
+                                        gpm3.pop(player)
+                                    if gpm_player_set[player] == 4:
+                                        gpm4.pop(player)
+                                    if gpm_player_set[player] == 1:
+                                        gpm1.pop(player)
+                                elif gpm_player_set[player] == 5:
+                                    if index + 1 == 2:
+                                        gpm2.pop(player)
+                                    if index + 1 == 3:
+                                        gpm3.pop(player)
+                                    if index + 1 == 4:
+                                        gpm4.pop(player)
+                                    if index + 1 == 1:
+                                        gpm1.pop(player)
+                            elif uinput == 0:
+                                print("Keeping both roles' stats")
+                            else:
+                                raise ValueError()
+                        except ValueError:
+                            print("Option not recognized.")
+                            foundInput = False
                 else:
                     gpm_player_set[player] = index + 1
                     gpm_value_set[player] = gpm
@@ -344,125 +352,128 @@ class Rd2lStats:
             for player, kda in copy.deepcopy(kdadict).items():
                 if player in kda_player_set:
                     counter += 1
-                    if user_choices[counter] == 1:
-                        cumulative = kda_value_set[player][0] * kda_value_set[player][1]
-                        matches = kda_value_set[player][1] + kda[1]
-                        evalList = [(cumulative + (kda[0] * kda[1])) / matches, matches]
-                        kda1[player] = evalList
-                        if index + 1 == 1:
-                            if kda_player_set[player] == 2:
-                                kda2.pop(player)
-                            if kda_player_set[player] == 3:
-                                kda3.pop(player)
-                            if kda_player_set[player] == 4:
-                                kda4.pop(player)
-                            if kda_player_set[player] == 5:
-                                kda5.pop(player)
-                        elif kda_player_set[player] == 1:
-                            if index + 1 == 2:
-                                kda2.pop(player)
-                            if index + 1 == 3:
-                                kda3.pop(player)
-                            if index + 1 == 4:
-                                kda4.pop(player)
-                            if index + 1 == 5:
-                                kda5.pop(player)
-                    elif user_choices[counter] == 2:
-                        cumulative = kda_value_set[player][0] * kda_value_set[player][1]
-                        matches = kda_value_set[player][1] + kda[1]
-                        evalList = [(cumulative + (kda[0] * kda[1])) / matches, matches]
-                        kda2[player] = evalList
-                        if index + 1 == 2:
-                            if kda_player_set[player] == 1:
-                                kda1.pop(player)
-                            if kda_player_set[player] == 3:
-                                kda3.pop(player)
-                            if kda_player_set[player] == 4:
-                                kda4.pop(player)
-                            if kda_player_set[player] == 5:
-                                kda5.pop(player)
-                        elif kda_player_set[player] == 2:
+                    try:
+                        if user_choices[counter] == 1:
+                            cumulative = kda_value_set[player][0] * kda_value_set[player][1]
+                            matches = kda_value_set[player][1] + kda[1]
+                            evalList = [(cumulative + (kda[0] * kda[1])) / matches, matches]
+                            kda1[player] = evalList
                             if index + 1 == 1:
-                                kda1.pop(player)
-                            if index + 1 == 3:
-                                kda3.pop(player)
-                            if index + 1 == 4:
-                                kda4.pop(player)
-                            if index + 1 == 5:
-                                kda5.pop(player)
-                    elif user_choices[counter] == 3:
-                        cumulative = kda_value_set[player][0] * kda_value_set[player][1]
-                        matches = kda_value_set[player][1] + kda[1]
-                        evalList = [(cumulative + (kda[0] * kda[1])) / matches, matches]
-                        kda3[player] = evalList
-                        if index + 1 == 3:
-                            if kda_player_set[player] == 2:
-                                kda2.pop(player)
-                            if kda_player_set[player] == 1:
-                                kda1.pop(player)
-                            if kda_player_set[player] == 4:
-                                kda4.pop(player)
-                            if kda_player_set[player] == 5:
-                                kda5.pop(player)
-                        elif kda_player_set[player] == 3:
+                                if kda_player_set[player] == 2:
+                                    kda2.pop(player)
+                                if kda_player_set[player] == 3:
+                                    kda3.pop(player)
+                                if kda_player_set[player] == 4:
+                                    kda4.pop(player)
+                                if kda_player_set[player] == 5:
+                                    kda5.pop(player)
+                            elif kda_player_set[player] == 1:
+                                if index + 1 == 2:
+                                    kda2.pop(player)
+                                if index + 1 == 3:
+                                    kda3.pop(player)
+                                if index + 1 == 4:
+                                    kda4.pop(player)
+                                if index + 1 == 5:
+                                    kda5.pop(player)
+                        elif user_choices[counter] == 2:
+                            cumulative = kda_value_set[player][0] * kda_value_set[player][1]
+                            matches = kda_value_set[player][1] + kda[1]
+                            evalList = [(cumulative + (kda[0] * kda[1])) / matches, matches]
+                            kda2[player] = evalList
                             if index + 1 == 2:
-                                kda2.pop(player)
-                            if index + 1 == 1:
-                                kda1.pop(player)
-                            if index + 1 == 4:
-                                kda4.pop(player)
-                            if index + 1 == 5:
-                                kda5.pop(player)
-                    elif user_choices[counter] == 4:
-                        cumulative = kda_value_set[player][0] * kda_value_set[player][1]
-                        matches = kda_value_set[player][1] + kda[1]
-                        evalList = [(cumulative + (kda[0] * kda[1])) / matches, matches]
-                        kda4[player] = evalList
-                        if index + 1 == 4:
-                            if kda_player_set[player] == 2:
-                                kda2.pop(player)
-                            if kda_player_set[player] == 3:
-                                kda3.pop(player)
-                            if kda_player_set[player] == 1:
-                                kda1.pop(player)
-                            if kda_player_set[player] == 5:
-                                kda5.pop(player)
-                        elif kda_player_set[player] == 4:
-                            if index + 1 == 2:
-                                kda2.pop(player)
+                                if kda_player_set[player] == 1:
+                                    kda1.pop(player)
+                                if kda_player_set[player] == 3:
+                                    kda3.pop(player)
+                                if kda_player_set[player] == 4:
+                                    kda4.pop(player)
+                                if kda_player_set[player] == 5:
+                                    kda5.pop(player)
+                            elif kda_player_set[player] == 2:
+                                if index + 1 == 1:
+                                    kda1.pop(player)
+                                if index + 1 == 3:
+                                    kda3.pop(player)
+                                if index + 1 == 4:
+                                    kda4.pop(player)
+                                if index + 1 == 5:
+                                    kda5.pop(player)
+                        elif user_choices[counter] == 3:
+                            cumulative = kda_value_set[player][0] * kda_value_set[player][1]
+                            matches = kda_value_set[player][1] + kda[1]
+                            evalList = [(cumulative + (kda[0] * kda[1])) / matches, matches]
+                            kda3[player] = evalList
                             if index + 1 == 3:
-                                kda3.pop(player)
-                            if index + 1 == 1:
-                                kda1.pop(player)
-                            if index + 1 == 5:
-                                kda5.pop(player)
-                    elif user_choices[counter] == 5:
-                        cumulative = kda_value_set[player][0] * kda_value_set[player][1]
-                        matches = kda_value_set[player][1] + kda[1]
-                        evalList = [(cumulative + (kda[0] * kda[1])) / matches, matches]
-                        kda5[player] = evalList
-                        if index + 1 == 5:
-                            if kda_player_set[player] == 2:
-                                kda2.pop(player)
-                            if kda_player_set[player] == 3:
-                                kda3.pop(player)
-                            if kda_player_set[player] == 4:
-                                kda4.pop(player)
-                            if kda_player_set[player] == 1:
-                                kda1.pop(player)
-                        elif kda_player_set[player] == 5:
-                            if index + 1 == 2:
-                                kda2.pop(player)
-                            if index + 1 == 3:
-                                kda3.pop(player)
+                                if kda_player_set[player] == 2:
+                                    kda2.pop(player)
+                                if kda_player_set[player] == 1:
+                                    kda1.pop(player)
+                                if kda_player_set[player] == 4:
+                                    kda4.pop(player)
+                                if kda_player_set[player] == 5:
+                                    kda5.pop(player)
+                            elif kda_player_set[player] == 3:
+                                if index + 1 == 2:
+                                    kda2.pop(player)
+                                if index + 1 == 1:
+                                    kda1.pop(player)
+                                if index + 1 == 4:
+                                    kda4.pop(player)
+                                if index + 1 == 5:
+                                    kda5.pop(player)
+                        elif user_choices[counter] == 4:
+                            cumulative = kda_value_set[player][0] * kda_value_set[player][1]
+                            matches = kda_value_set[player][1] + kda[1]
+                            evalList = [(cumulative + (kda[0] * kda[1])) / matches, matches]
+                            kda4[player] = evalList
                             if index + 1 == 4:
-                                kda4.pop(player)
+                                if kda_player_set[player] == 2:
+                                    kda2.pop(player)
+                                if kda_player_set[player] == 3:
+                                    kda3.pop(player)
+                                if kda_player_set[player] == 1:
+                                    kda1.pop(player)
+                                if kda_player_set[player] == 5:
+                                    kda5.pop(player)
+                            elif kda_player_set[player] == 4:
+                                if index + 1 == 2:
+                                    kda2.pop(player)
+                                if index + 1 == 3:
+                                    kda3.pop(player)
+                                if index + 1 == 1:
+                                    kda1.pop(player)
+                                if index + 1 == 5:
+                                    kda5.pop(player)
+                        elif user_choices[counter] == 5:
+                            cumulative = kda_value_set[player][0] * kda_value_set[player][1]
+                            matches = kda_value_set[player][1] + kda[1]
+                            evalList = [(cumulative + (kda[0] * kda[1])) / matches, matches]
+                            kda5[player] = evalList
                             if index + 1 == 5:
-                                kda1.pop(player)
-                    elif user_choices[counter] == 0:
-                        print("Keeping both roles stats")
-                    else:
-                        print("Option not recognized. Please enter 1, 2 or 3")
+                                if kda_player_set[player] == 2:
+                                    kda2.pop(player)
+                                if kda_player_set[player] == 3:
+                                    kda3.pop(player)
+                                if kda_player_set[player] == 4:
+                                    kda4.pop(player)
+                                if kda_player_set[player] == 1:
+                                    kda1.pop(player)
+                            elif kda_player_set[player] == 5:
+                                if index + 1 == 2:
+                                    kda2.pop(player)
+                                if index + 1 == 3:
+                                    kda3.pop(player)
+                                if index + 1 == 4:
+                                    kda4.pop(player)
+                                if index + 1 == 5:
+                                    kda1.pop(player)
+                        elif user_choices[counter] == 0:
+                            print("Keeping both roles' stats")
+                        else:
+                            raise ValueError()
+                    except ValueError:
+                        print("Option not recognized.")
 
                 else:
                     kda_player_set[player] = index + 1
@@ -1441,7 +1452,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
 
-    if message.author.id not in admin_ids:
+    if message.author.id != admin_id:
         return
 
     # Find duplicates for a single player across multiple roles
