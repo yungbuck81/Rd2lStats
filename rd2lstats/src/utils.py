@@ -13,8 +13,7 @@ def update_current_week(dict):
     games_played = 0
     filtered_dict = {key: value for key, value in dict.items()}
     for player in filtered_dict.items():
-        games_played = max(games_played, player[1])
-    print("Games into season: " + games_played)
+        games_played = max(games_played, player[1][1])
     return games_played
 
 def list_difference(li1, li2):

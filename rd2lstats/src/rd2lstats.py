@@ -85,7 +85,6 @@ class Rd2lStats:
         self.highest_courier_match = ""
 
         self.stats_leaders_dict = {}
-        self.games_played = 0
 
     # Function that calculates the fantasy score for a player object
     def get_fantasy_score(self, player):
@@ -695,8 +694,7 @@ class Rd2lStats:
         return
 
     # Function that calculates stats for current week, adds them to the cumulative stats for the season
-    def get_stats(self):
-
+    def generate_stats(self):
         # TODO: Create function that can be reused
         gpm1 = process_dict_values_into_list(
             dict(csv.reader(open(pos1directory + pos1gpmfile, 'r+', encoding="utf-8", newline=''))))
@@ -765,9 +763,6 @@ class Rd2lStats:
             dict(csv.reader(open(pos4currentdirectory + pos4fantasyfile, 'w+', encoding="utf-8", newline=''))))
         fantasy5current = process_dict_values_into_list(
             dict(csv.reader(open(pos5currentdirectory + pos5fantasyfile, 'w+', encoding="utf-8", newline=''))))
-
-        # Find number of games played in season this far
-        self.games_played = update_current_week(gpm2)
 
         matches_size = len(match_ids)
         for match_index, matchid in enumerate(match_ids):
@@ -1444,9 +1439,6 @@ class Rd2lStats:
 
 rd2lstats = Rd2lStats()
 
-def threshold_wrapper(item):
-    return passes_role_threshold(item, rd2lstats.games_played)
-
 # Function invoked when bot is live
 @client.event
 async def on_ready():
@@ -1475,7 +1467,7 @@ async def on_message(message):
     # Generate stats will generate stats without printing them out, used for debugging
     if message.content.startswith('$bot_generate_stats'):
         print('Generating stats...')
-        rd2lstats.get_stats()
+        rd2lstats.generate_stats()
 
     # Prints out stats in discord embeds
     if message.content.startswith('$bot_get_stats'):
@@ -1517,6 +1509,10 @@ async def on_message(message):
 
         print('Finished processing stats files')
 
+        # Find number of games played in season this far
+        games_played = update_current_week(gpm2)
+        threshold_wrapper = lambda item: passes_role_threshold(item, games_played)
+
         # TODO: Add better names for embeds
         embed = discord.Embed(title="Highest GPM", colour=discord.Colour(0x1),
                               description=stats_leaders_dict['gpm']['name'])
@@ -1526,7 +1522,7 @@ async def on_message(message):
         embed.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["gpm"]["match"],
                                                                 stats_leaders_dict["gpm"]["match"]))
 
-        print('Processed embed 1')
+        print('Processed Highest GPM')
 
         embed2 = discord.Embed(title="Highest XPM", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['xpm']['name'])
@@ -1536,7 +1532,7 @@ async def on_message(message):
         embed2.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["xpm"]["match"],
                                                                  stats_leaders_dict["xpm"]["match"]))
 
-        print('Processed embed 2')
+        print('Processed Highest XPM')
 
         embed3 = discord.Embed(title="Highest KDA", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['kda']['name'])
@@ -1546,7 +1542,7 @@ async def on_message(message):
         embed3.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["kda"]["match"],
                                                                  stats_leaders_dict["kda"]["match"]))
 
-        print('Processed embed 3')
+        print('Processed Highest KDA')
 
         embed4 = discord.Embed(title="Highest Hero damage", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['herodamage']['name'])
@@ -1556,7 +1552,7 @@ async def on_message(message):
         embed4.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["herodamage"]["match"],
                                                                  stats_leaders_dict["herodamage"]["match"]))
 
-        print('Processed embed 4')
+        print('Processed Highest Hero Damage')
 
         embed5 = discord.Embed(title="Highest Stun time", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['stuns']['name'])
@@ -1566,7 +1562,7 @@ async def on_message(message):
         embed5.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["stuns"]["match"],
                                                                  stats_leaders_dict["stuns"]["match"]))
 
-        print('Processed embed 5')
+        print('Processed Highest Stun Time')
 
         embed6 = discord.Embed(title="Most camps stacked", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['camps']['name'])
@@ -1576,7 +1572,7 @@ async def on_message(message):
         embed6.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["camps"]["match"],
                                                                  stats_leaders_dict["camps"]["match"]))
 
-        print('Processed embed 6')
+        print('Processed Most Camps Stacked')
 
         embed7 = discord.Embed(title="Highest Tower damage", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['towerdamage']['name'])
@@ -1586,7 +1582,7 @@ async def on_message(message):
         embed7.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["towerdamage"]["match"],
                                                                  stats_leaders_dict["towerdamage"]["match"]))
 
-        print('Processed embed 7')
+        print('Processed Highest Tower Damage')
 
         embed8 = discord.Embed(title="Best lane efficiency", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['lane']['name'])
@@ -1596,7 +1592,7 @@ async def on_message(message):
         embed8.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["lane"]["match"],
                                                                  stats_leaders_dict["lane"]["match"]))
 
-        print('Processed embed 8')
+        print('Processed Best Lane Efficiency')
 
         embed9 = discord.Embed(title="Highest dewards", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['deward']['name'])
@@ -1606,7 +1602,7 @@ async def on_message(message):
         embed9.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["deward"]["match"],
                                                                  stats_leaders_dict["deward"]["match"]))
 
-        print('Processed embed 9')
+        print('Processed Highest Dewards')
 
         embed10 = discord.Embed(title="Highest APM", colour=discord.Colour(0x1),
                                 description=stats_leaders_dict['apm']['name'])
@@ -1616,7 +1612,7 @@ async def on_message(message):
         embed10.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["apm"]["match"],
                                                                   stats_leaders_dict["apm"]["match"]))
 
-        print('Processed embed 10')
+        print('Processed Highest APM')
 
         embed16 = discord.Embed(title="Highest Courier kills", colour=discord.Colour(0x1),
                                 description=stats_leaders_dict['courier']['name'])
@@ -1626,7 +1622,7 @@ async def on_message(message):
         embed16.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["courier"]["match"],
                                                                   stats_leaders_dict["courier"]["match"]))
 
-        print('Processed embed 16')
+        print('Processed Highest Courier Kills')
 
         filtered_gpm1 = {key: value for key, value in gpm1.items()}
         sorted_dict_gpm = sorted(filtered_gpm1.items(), key=threshold_wrapper, reverse=True)
