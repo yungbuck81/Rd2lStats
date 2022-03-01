@@ -21,7 +21,7 @@ import copy
 
 from src.utils import process_dict_values_into_list, list_difference, write_to_pos_based_csv_files, \
     find_player_in_dictionaries, empty_all_stat_files, write_to_pos_based_csv_files_current_week, \
-    calculate_weighted_average
+    passes_role_threshold, update_current_week
 
 client = discord.Client()
 permissionkey = open(permissionkeyfile).read()
@@ -85,7 +85,6 @@ class Rd2lStats:
         self.highest_courier_match = ""
 
         self.stats_leaders_dict = {}
-        self.current_week = 2
 
     # Function that calculates the fantasy score for a player object
     def get_fantasy_score(self, player):
@@ -695,8 +694,7 @@ class Rd2lStats:
         return
 
     # Function that calculates stats for current week, adds them to the cumulative stats for the season
-    def get_stats(self):
-
+    def generate_stats(self):
         # TODO: Create function that can be reused
         gpm1 = process_dict_values_into_list(
             dict(csv.reader(open(pos1directory + pos1gpmfile, 'r+', encoding="utf-8", newline=''))))
@@ -1441,7 +1439,6 @@ class Rd2lStats:
 
 rd2lstats = Rd2lStats()
 
-
 # Function invoked when bot is live
 @client.event
 async def on_ready():
@@ -1470,7 +1467,7 @@ async def on_message(message):
     # Generate stats will generate stats without printing them out, used for debugging
     if message.content.startswith('$bot_generate_stats'):
         print('Generating stats...')
-        rd2lstats.get_stats()
+        rd2lstats.generate_stats()
 
     # Prints out stats in discord embeds
     if message.content.startswith('$bot_get_stats'):
@@ -1512,6 +1509,10 @@ async def on_message(message):
 
         print('Finished processing stats files')
 
+        # Find number of games played in season this far
+        games_played = update_current_week(gpm2)
+        threshold_wrapper = lambda item: passes_role_threshold(item, games_played)
+
         # TODO: Add better names for embeds
         embed = discord.Embed(title="Highest GPM", colour=discord.Colour(0x1),
                               description=stats_leaders_dict['gpm']['name'])
@@ -1521,7 +1522,7 @@ async def on_message(message):
         embed.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["gpm"]["match"],
                                                                 stats_leaders_dict["gpm"]["match"]))
 
-        print('Processed embed 1')
+        print('Processed Highest GPM')
 
         embed2 = discord.Embed(title="Highest XPM", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['xpm']['name'])
@@ -1531,7 +1532,7 @@ async def on_message(message):
         embed2.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["xpm"]["match"],
                                                                  stats_leaders_dict["xpm"]["match"]))
 
-        print('Processed embed 2')
+        print('Processed Highest XPM')
 
         embed3 = discord.Embed(title="Highest KDA", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['kda']['name'])
@@ -1541,7 +1542,7 @@ async def on_message(message):
         embed3.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["kda"]["match"],
                                                                  stats_leaders_dict["kda"]["match"]))
 
-        print('Processed embed 3')
+        print('Processed Highest KDA')
 
         embed4 = discord.Embed(title="Highest Hero damage", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['herodamage']['name'])
@@ -1551,7 +1552,7 @@ async def on_message(message):
         embed4.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["herodamage"]["match"],
                                                                  stats_leaders_dict["herodamage"]["match"]))
 
-        print('Processed embed 4')
+        print('Processed Highest Hero Damage')
 
         embed5 = discord.Embed(title="Highest Stun time", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['stuns']['name'])
@@ -1561,7 +1562,7 @@ async def on_message(message):
         embed5.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["stuns"]["match"],
                                                                  stats_leaders_dict["stuns"]["match"]))
 
-        print('Processed embed 5')
+        print('Processed Highest Stun Time')
 
         embed6 = discord.Embed(title="Most camps stacked", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['camps']['name'])
@@ -1571,7 +1572,7 @@ async def on_message(message):
         embed6.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["camps"]["match"],
                                                                  stats_leaders_dict["camps"]["match"]))
 
-        print('Processed embed 6')
+        print('Processed Most Camps Stacked')
 
         embed7 = discord.Embed(title="Highest Tower damage", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['towerdamage']['name'])
@@ -1581,7 +1582,7 @@ async def on_message(message):
         embed7.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["towerdamage"]["match"],
                                                                  stats_leaders_dict["towerdamage"]["match"]))
 
-        print('Processed embed 7')
+        print('Processed Highest Tower Damage')
 
         embed8 = discord.Embed(title="Best lane efficiency", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['lane']['name'])
@@ -1591,7 +1592,7 @@ async def on_message(message):
         embed8.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["lane"]["match"],
                                                                  stats_leaders_dict["lane"]["match"]))
 
-        print('Processed embed 8')
+        print('Processed Best Lane Efficiency')
 
         embed9 = discord.Embed(title="Highest dewards", colour=discord.Colour(0x1),
                                description=stats_leaders_dict['deward']['name'])
@@ -1601,7 +1602,7 @@ async def on_message(message):
         embed9.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["deward"]["match"],
                                                                  stats_leaders_dict["deward"]["match"]))
 
-        print('Processed embed 9')
+        print('Processed Highest Dewards')
 
         embed10 = discord.Embed(title="Highest APM", colour=discord.Colour(0x1),
                                 description=stats_leaders_dict['apm']['name'])
@@ -1611,7 +1612,7 @@ async def on_message(message):
         embed10.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["apm"]["match"],
                                                                   stats_leaders_dict["apm"]["match"]))
 
-        print('Processed embed 10')
+        print('Processed Highest APM')
 
         embed16 = discord.Embed(title="Highest Courier kills", colour=discord.Colour(0x1),
                                 description=stats_leaders_dict['courier']['name'])
@@ -1621,14 +1622,14 @@ async def on_message(message):
         embed16.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["courier"]["match"],
                                                                   stats_leaders_dict["courier"]["match"]))
 
-        print('Processed embed 16')
+        print('Processed Highest Courier Kills')
 
         filtered_gpm1 = {key: value for key, value in gpm1.items()}
-        sorted_dict_gpm = sorted(filtered_gpm1.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm1.items(), key=threshold_wrapper, reverse=True)
         filtered_kda1 = {key: value for key, value in kda1.items()}
-        sorted_dict_kda = sorted(filtered_kda1.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_kda = sorted(filtered_kda1.items(), key=threshold_wrapper, reverse=True)
         filtered_fantasy1 = {key: value for key, value in fantasy1.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy1.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy1.items(), key=threshold_wrapper, reverse=True)
 
         embed11 = discord.Embed(title="Pos 1 Leaderboard", colour=discord.Colour(0x1))
         embed11.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
@@ -1696,11 +1697,11 @@ async def on_message(message):
         print('Processed embed 11')
 
         filtered_gpm2 = {key: value for key, value in gpm2.items()}
-        sorted_dict_gpm = sorted(filtered_gpm2.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm2.items(), key=threshold_wrapper, reverse=True)
         filtered_kda2 = {key: value for key, value in kda2.items()}
-        sorted_dict_kda = sorted(filtered_kda2.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_kda = sorted(filtered_kda2.items(), key=threshold_wrapper, reverse=True)
         filtered_fantasy2 = {key: value for key, value in fantasy2.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy2.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy2.items(), key=threshold_wrapper, reverse=True)
 
         embed12 = discord.Embed(title="Pos 2 Leaderboard", colour=discord.Colour(0x1))
         embed12.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
@@ -1772,11 +1773,11 @@ async def on_message(message):
         time.sleep(60)
 
         filtered_gpm3 = {key: value for key, value in gpm3.items()}
-        sorted_dict_gpm = sorted(filtered_gpm3.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm3.items(), key=threshold_wrapper, reverse=True)
         filtered_kda3 = {key: value for key, value in kda3.items()}
-        sorted_dict_kda = sorted(filtered_kda3.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_kda = sorted(filtered_kda3.items(), key=threshold_wrapper, reverse=True)
         filtered_fantasy3 = {key: value for key, value in fantasy3.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy3.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy3.items(), key=threshold_wrapper, reverse=True)
 
         embed13 = discord.Embed(title="Pos 3 Leaderboard", colour=discord.Colour(0x1))
         embed13.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
@@ -1845,11 +1846,11 @@ async def on_message(message):
         print('Processed embed 13')
 
         filtered_gpm4 = {key: value for key, value in gpm4.items()}
-        sorted_dict_gpm = sorted(filtered_gpm4.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm4.items(), key=threshold_wrapper, reverse=True)
         filtered_kda4 = {key: value for key, value in kda4.items()}
-        sorted_dict_kda = sorted(filtered_kda4.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_kda = sorted(filtered_kda4.items(), key=threshold_wrapper, reverse=True)
         filtered_fantasy4 = {key: value for key, value in fantasy4.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy4.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy4.items(), key=threshold_wrapper, reverse=True)
 
         embed14 = discord.Embed(title="Pos 4 Leaderboard", colour=discord.Colour(0x1))
         embed14.add_field(name="Ranking", value="1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. \n10.", inline=True)
@@ -1917,11 +1918,11 @@ async def on_message(message):
         print('Processed embed 14')
 
         filtered_gpm5 = {key: value for key, value in gpm5.items()}
-        sorted_dict_gpm = sorted(filtered_gpm5.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_gpm = sorted(filtered_gpm5.items(), key=threshold_wrapper, reverse=True)
         filtered_kda5 = {key: value for key, value in kda5.items()}
-        sorted_dict_kda = sorted(filtered_kda5.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_kda = sorted(filtered_kda5.items(), key=threshold_wrapper, reverse=True)
         filtered_fantasy5 = {key: value for key, value in fantasy5.items()}
-        sorted_dict_fantasy = sorted(filtered_fantasy5.items(), key=calculate_weighted_average, reverse=True)
+        sorted_dict_fantasy = sorted(filtered_fantasy5.items(), key=threshold_wrapper, reverse=True)
         print('Sleeping for 60s...')
 
         time.sleep(60)

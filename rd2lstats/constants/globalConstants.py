@@ -1,6 +1,7 @@
 
 # Contains the current week match ID's to parse stats for
 match_ids = ["6442337208", "6442340533", "6442374644", "6442384483", "6442392229", "6442339747", "6442369562", "6442336462", "6442372668", "6442339180", "6442372121", "6442336463", "6442385345", "6442340814", "6442380377"]
+current_week = 4
 
 # permissionkey location - added in manually
 permissionkeyfile = "../permissionkey.txt"
