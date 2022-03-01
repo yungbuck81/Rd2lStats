@@ -6,8 +6,16 @@ import csv
 from constants.globalConstants import pos1directory, pos1gpmfile, pos1kdafile, pos1fantasyfile, pos2gpmfile, \
     pos2directory, pos2kdafile, pos2fantasyfile, pos3directory, pos3gpmfile, pos3kdafile, pos3fantasyfile, \
     pos4directory, pos4gpmfile, pos4kdafile, pos4fantasyfile, pos5directory, pos5gpmfile, pos5kdafile, pos5fantasyfile, \
-    pos1currentdirectory, pos2currentdirectory, pos3currentdirectory, pos4currentdirectory, pos5currentdirectory, current_week
+    pos1currentdirectory, pos2currentdirectory, pos3currentdirectory, pos4currentdirectory, pos5currentdirectory
 
+
+def update_current_week(dict):
+    games_played = 0
+    filtered_dict = {key: value for key, value in dict.items()}
+    for player in filtered_dict.items():
+        games_played = max(games_played, player[1])
+    print("Games into season: " + games_played)
+    return games_played
 
 def list_difference(li1, li2):
     li_dif = [i for i in li1 if i not in li2]
@@ -42,11 +50,13 @@ def find_player_in_dictionaries(player, dict1, dict2, dict3, dict4, dict5):
         return
 
 # Calculate weighted average given a stat
-def passes_role_threshold(stat):
-    games_played = current_week * 2
+def passes_role_threshold(stat, games_played):
+
+    # Weight off-role players based on the number of games played
     if(stat[1][1] < 0.4 * games_played):
-        return 0
-    return stat[1][0]
+        games_played = stat[1][1]
+
+    return stat[1][0] * games_played
 
 # Function that takes in position based stats dictionaries and writes them to csv files for current week stats only
 def write_to_pos_based_csv_files_current_week(gpm1, kda1, fantasy1,
