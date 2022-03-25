@@ -1298,15 +1298,15 @@ class Rd2lStats:
                     self.highest_courier_player = player['account_id']
                     self.highest_courier_hero = player['hero_id']
                     self.highest_courier_match = dotabuff_url + str(json_data['match_id'])
-                if 'actions_per_min' in player and player['actions_per_min'] > self.highest_apm_value:
-                    self.highest_apm_value = player['actions_per_min']
-                    self.highest_apm_player = player['account_id']
-                    self.highest_apm_hero = player['hero_id']
-                    self.highest_apm_match = dotabuff_url + str(json_data['match_id'])
+                # if 'actions_per_min' in player and player['actions_per_min'] > self.highest_apm_value:
+                #     self.highest_apm_value = player['actions_per_min']
+                #     self.highest_apm_player = player['account_id']
+                #     self.highest_apm_hero = player['hero_id']
+                #     self.highest_apm_match = dotabuff_url + str(json_data['match_id'])
             print("Processed match {} of {} with ID: {}".format(match_index, matches_size, matchid))
 
         # Sleeping to avoid OpenDota API throttling
-        print("Slpeeing for 60s...")
+        print("Sleeping for 60s...")
         time.sleep(60)
         response = requests.get(opendota_api_players_url + str(self.highest_gpm_player))
         json_data = json.loads(response.text)
@@ -1396,14 +1396,14 @@ class Rd2lStats:
             "match": self.highest_deward_match,
             "value": self.highest_deward_value}
 
-        response = requests.get(opendota_api_players_url + str(self.highest_apm_player))
-        json_data = json.loads(response.text)
-        self.stats_leaders_dict["apm"] = {"name": (json_data['profile']['name'] if json_data['profile']['name'] != None
-                                                   else json_data['profile']['personaname']),
-                                          "avatar": json_data['profile']['avatarmedium'],
-                                          "hero": self.highest_apm_hero,
-                                          "match": self.highest_apm_match,
-                                          "value": self.highest_apm_value}
+        # response = requests.get(opendota_api_players_url + str(self.highest_apm_player))
+        # json_data = json.loads(response.text)
+        # self.stats_leaders_dict["apm"] = {"name": (json_data['profile']['name'] if json_data['profile']['name'] != None
+        #                                            else json_data['profile']['personaname']),
+        #                                   "avatar": json_data['profile']['avatarmedium'],
+        #                                   "hero": self.highest_apm_hero,
+        #                                   "match": self.highest_apm_match,
+        #                                   "value": self.highest_apm_value}
 
         response = requests.get(opendota_api_players_url + str(self.highest_courier_player))
         json_data = json.loads(response.text)
@@ -1604,15 +1604,15 @@ async def on_message(message):
 
         print('Processed Highest Dewards')
 
-        embed10 = discord.Embed(title="Highest APM", colour=discord.Colour(0x1),
-                                description=stats_leaders_dict['apm']['name'])
-        embed10.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['apm']['hero'])))
-        embed10.set_thumbnail(url=stats_leaders_dict['apm']['avatar'])
-        embed10.add_field(name="APM", value=stats_leaders_dict['apm']['value'])
-        embed10.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["apm"]["match"],
-                                                                  stats_leaders_dict["apm"]["match"]))
+        # embed10 = discord.Embed(title="Highest APM", colour=discord.Colour(0x1),
+        #                         description=stats_leaders_dict['apm']['name'])
+        # embed10.set_image(url="{}{}.png".format(steam_cdn, get_hero_name(stats_leaders_dict['apm']['hero'])))
+        # embed10.set_thumbnail(url=stats_leaders_dict['apm']['avatar'])
+        # embed10.add_field(name="APM", value=stats_leaders_dict['apm']['value'])
+        # embed10.add_field(name="MatchID", value="[{}]({})".format(stats_leaders_dict["apm"]["match"],
+        #                                                           stats_leaders_dict["apm"]["match"]))
 
-        print('Processed Highest APM')
+        # print('Processed Highest APM')
 
         embed16 = discord.Embed(title="Highest Courier kills", colour=discord.Colour(0x1),
                                 description=stats_leaders_dict['courier']['name'])
@@ -2001,7 +2001,7 @@ async def on_message(message):
         await message.channel.send(embed=embed7)
         await message.channel.send(embed=embed8)
         await message.channel.send(embed=embed9)
-        await message.channel.send(embed=embed10)
+        # await message.channel.send(embed=embed10)
         await message.channel.send(embed=embed16)
 
         await message.channel.send(embed=embed11)
