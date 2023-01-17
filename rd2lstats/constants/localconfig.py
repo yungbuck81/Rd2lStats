@@ -1,1 +1,1 @@
-admin_id = 257075432828960769 #discord ID
+admin_id = 215689154820833281 #discord ID
