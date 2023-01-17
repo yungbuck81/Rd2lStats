@@ -22,8 +22,8 @@ import copy
 from src.utils import process_dict_values_into_list, list_difference, write_to_pos_based_csv_files, \
     find_player_in_dictionaries, empty_all_stat_files, write_to_pos_based_csv_files_current_week, \
     passes_role_threshold, update_current_week
-
-client = discord.Client()
+intents = discord.Intents.default()
+client = discord.Client(intents=intents)
 permissionkey = open(permissionkeyfile).read()
 
 class Rd2lStats:
